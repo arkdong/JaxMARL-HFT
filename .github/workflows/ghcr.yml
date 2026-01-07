@@ -46,4 +46,6 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/jaxmarl-hft:latest
-
+	  build-args: |
+            UID=1000
+            MYUSER=runpod
