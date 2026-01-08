@@ -160,7 +160,8 @@ notebook==7.3.2
 notebook_shim==0.2.4
 # Editable install with no version control (nsys-jax==0.1.dev1085+gb0ec72a)
 # -e /opt/nsys-jax/.github/container/nsys_jax
-nsys-jax==0.1.dev1085+gb0ec72a
+# nsys-jax==0.1.dev1085+gb0ec72a
+nsys-jax
 numpy==1.26.4
 nvidia-cublas-cu12==12.6.4.1
 nvidia-cuda-cupti-cu12==12.6.80
