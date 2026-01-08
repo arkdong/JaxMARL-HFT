@@ -291,7 +291,7 @@ tornado==6.4.2
 tqdm==4.67.1
 traitlets==5.14.3
 # transformer_engine @ file:///opt/transformer-engine/dist/transformer_engine-1.14.0+87fbe812f-cp312-cp312-linux_x86_64.whl#sha256=9bb7e91c6687050a3dc5d3b80d5719df293da899c238057beda3ee0f55e3253a
-transformer_engine==1.14.0+87fbe812f
+# transformer_engine==1.14.0+87fbe812f
 transformers==4.49.0
 treescope==0.1.9
 trimesh==4.6.3
