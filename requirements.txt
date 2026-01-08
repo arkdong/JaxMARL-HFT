@@ -56,7 +56,8 @@ flake8==7.1.2
 Flask==3.1.0
 flask-cors==5.0.1
 # Editable Git install with no remote (flax==0.10.2)
--e /opt/flax
+# -e /opt/flax
+flax==0.10.2
 fonttools==4.56.0
 fqdn==1.5.1
 frozenlist==1.7.0
@@ -158,7 +159,8 @@ networkx==3.4.2
 notebook==7.3.2
 notebook_shim==0.2.4
 # Editable install with no version control (nsys-jax==0.1.dev1085+gb0ec72a)
--e /opt/nsys-jax/.github/container/nsys_jax
+# -e /opt/nsys-jax/.github/container/nsys_jax
+nsys-jax==0.1.dev1085+gb0ec72a
 numpy==1.26.4
 nvidia-cublas-cu12==12.6.4.1
 nvidia-cuda-cupti-cu12==12.6.80
@@ -282,11 +284,12 @@ tokenizers==0.21.0
 tomli==2.2.1
 tomlkit==0.13.2
 toolz==1.0.0
-#torch==2.7.1
+torch==2.7.1
 tornado==6.4.2
 tqdm==4.67.1
 traitlets==5.14.3
-transformer_engine @ file:///opt/transformer-engine/dist/transformer_engine-1.14.0+87fbe812f-cp312-cp312-linux_x86_64.whl#sha256=9bb7e91c6687050a3dc5d3b80d5719df293da899c238057beda3ee0f55e3253a
+# transformer_engine @ file:///opt/transformer-engine/dist/transformer_engine-1.14.0+87fbe812f-cp312-cp312-linux_x86_64.whl#sha256=9bb7e91c6687050a3dc5d3b80d5719df293da899c238057beda3ee0f55e3253a
+transformer_engine==1.14.0+87fbe812f
 transformers==4.49.0
 treescope==0.1.9
 trimesh==4.6.3
