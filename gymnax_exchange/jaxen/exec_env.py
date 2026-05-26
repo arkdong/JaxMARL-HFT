@@ -206,7 +206,6 @@ class ExecutionAgent():
     
 
 
-    @partial(jax.jit, static_argnums=(0,))
     def reset_env(
             self,
             agent_param: ExecEnvParams,
@@ -427,11 +426,9 @@ class ExecutionAgent():
         def matching_masks(prices_a, prices_cnl):
             res = p_in_cnl(prices_a, prices_cnl)
             return jnp.any(res, axis=1), jnp.any(res, axis=0)
-        @jax.jit
         def argsort_rev(arr):
             """ 'arr' sorted in descending order (LTR priority tie-breaker) """
             return (arr.shape[0] - 1 - jnp.argsort(arr[::-1]))[::-1]
-        @jax.jit
         def rank_rev(arr):
             """ Rank array in descending order, with ties having left-to-right priority. """
             return jnp.argsort(argsort_rev(arr))

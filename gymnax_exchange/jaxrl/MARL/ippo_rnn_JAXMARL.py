@@ -560,14 +560,6 @@ def make_train(config):
             num_agents_of_instance_list.append(env.multi_agent_config.number_of_agents_per_type[i])
             init_dones_agents.append(jnp.zeros((config["NUM_ACTORS_PERTYPE"][i]), dtype=bool))
 
-        # INIT ENV
-        rng, _rng = jax.random.split(rng)
-        reset_rng = jax.random.split(_rng, config["NUM_ENVS"])
-        env_params=env.default_params
-        if config["CALC_EVAL"]:
-            eval_env_params=eval_env.default_params # type: ignore
-        else:
-            eval_env_params = None
         # Multi-device setup
         devices = jax.devices()
         n_devices = len(devices)
@@ -578,7 +570,19 @@ def make_train(config):
             f"NUM_ENVS ({config['NUM_ENVS']}) must be divisible by number of devices ({n_devices})"
         print(f"Multi-device: {n_devices} device(s) detected, sharding {config['NUM_ENVS']} envs across them")
 
+        # INIT ENV
+        rng, _rng = jax.random.split(rng)
+        reset_rng = jax.random.split(_rng, config["NUM_ENVS"])
+        reset_rng = jax.lax.with_sharding_constraint(reset_rng, batch_sharding)
+        env_params=env.default_params
+        if config["CALC_EVAL"]:
+            eval_env_params=eval_env.default_params # type: ignore
+        else:
+            eval_env_params = None
+
         obsv, env_state = jax.vmap(env.reset, in_axes=(0,None))(reset_rng,env_params)
+        obsv = jax.tree.map(lambda x: jax.lax.with_sharding_constraint(x, batch_sharding), obsv)
+        env_state = jax.tree.map(lambda x: jax.lax.with_sharding_constraint(x, batch_sharding), env_state)
         # TRAIN LOOP
         
 
@@ -622,10 +626,15 @@ def make_train(config):
                 # STEP ENV
                 rng, _rng = jax.random.split(rng)
                 rng_step = jax.random.split(_rng, config["NUM_ENVS"])
+                rng_step = jax.lax.with_sharding_constraint(rng_step, batch_sharding)
 
                 obsv, env_state, reward, done, info = jax.vmap(
                     env.step, in_axes=(0, 0, 0,None)
                 )(rng_step, env_state, actions,env_params)
+                obsv = jax.tree.map(lambda x: jax.lax.with_sharding_constraint(x, batch_sharding), obsv)
+                env_state = jax.tree.map(lambda x: jax.lax.with_sharding_constraint(x, batch_sharding), env_state)
+                reward = jax.tree.map(lambda x: jax.lax.with_sharding_constraint(x, batch_sharding), reward)
+                done = jax.tree.map(lambda x: jax.lax.with_sharding_constraint(x, batch_sharding), done)
                 def reward_callback(reward_max_idx,reward,trades,bids,asks,p_vwap):
                     if reward[reward_max_idx] > 5:
                         print("Reward exceeded threshold:", reward[reward_max_idx])
@@ -919,9 +928,14 @@ def make_train(config):
                     # STEP ENV
                     rng, _rng = jax.random.split(rng)
                     rng_step = jax.random.split(_rng, config["NUM_ENVS"])
+                    rng_step = jax.lax.with_sharding_constraint(rng_step, batch_sharding)
                     obsv, eval_env_state, reward, done, info = jax.vmap(
                         eval_env.step, in_axes=(0, 0, 0, None) # type: ignore
                     )(rng_step, eval_env_state, actions, eval_env_params)
+                    obsv = jax.tree.map(lambda x: jax.lax.with_sharding_constraint(x, batch_sharding), obsv)
+                    eval_env_state = jax.tree.map(lambda x: jax.lax.with_sharding_constraint(x, batch_sharding), eval_env_state)
+                    reward = jax.tree.map(lambda x: jax.lax.with_sharding_constraint(x, batch_sharding), reward)
+                    done = jax.tree.map(lambda x: jax.lax.with_sharding_constraint(x, batch_sharding), done)
                     done_batch=done
                     transitions=[]    
 
@@ -953,6 +967,8 @@ def make_train(config):
                 rng, _rng = jax.random.split(rng)
                 reset_rng = jax.random.split(_rng, config["NUM_ENVS"])
                 eval_obsv, eval_env_state = jax.vmap(eval_env.reset, in_axes=(0, None))(reset_rng, eval_env_params) # type: ignore
+                eval_obsv = jax.tree.map(lambda x: jax.lax.with_sharding_constraint(x, batch_sharding), eval_obsv)
+                eval_env_state = jax.tree.map(lambda x: jax.lax.with_sharding_constraint(x, batch_sharding), eval_env_state)
 
 
                 eval_hstates=[]
