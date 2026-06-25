@@ -293,6 +293,18 @@ class LoadLOBSTER():
                             skip_blank_lines=True
                         )
                         
+                        # Verify that the number of columns matches the expected depth
+                        actual_cols = df_book.shape[1]
+                        expected_cols = self.n_Levels * 4
+                        if actual_cols != expected_cols:
+                            raise ValueError(
+                                f"\n[Data Mismatch Error] File: {os.path.basename(book_file)}\n"
+                                f"The orderbook file has {actual_cols} columns, but the environment is configured "
+                                f"for book_depth={self.n_Levels} ({expected_cols} columns expected).\n"
+                                f"Please update 'book_depth' in your config file to {actual_cols // 4} "
+                                f"or provide data files matching the requested depth."
+                            )
+                        
                         read_time = time.time() - start_time
                         
                         if not df_message.empty and not df_book.empty:
@@ -787,6 +799,18 @@ class LoadLOBSTER_resample():
                             na_filter=False,
                             skip_blank_lines=True
                         )
+                        
+                        # Verify that the number of columns matches the expected depth
+                        actual_cols = df_book.shape[1]
+                        expected_cols = self.n_Levels * 4
+                        if actual_cols != expected_cols:
+                            raise ValueError(
+                                f"\n[Data Mismatch Error] File: {os.path.basename(book_file)}\n"
+                                f"The orderbook file has {actual_cols} columns, but the environment is configured "
+                                f"for book_depth={self.n_Levels} ({expected_cols} columns expected).\n"
+                                f"Please update 'book_depth' in your config file to {actual_cols // 4} "
+                                f"or provide data files matching the requested depth."
+                            )
                         
                         read_time = time.time() - start_time
                         

@@ -186,7 +186,6 @@ class BaseLOBEnv(environment.Environment):
             init_states_array=self.init_states_array
         )
     
-    @partial(jax.jit, static_argnums=(0,))
     def step_env(
         self, key: chex.PRNGKey, state: LoadedEnvState, action: Dict, params: LoadedEnvParams
     ) -> Tuple[chex.Array, LoadedEnvState, float, bool, dict]:

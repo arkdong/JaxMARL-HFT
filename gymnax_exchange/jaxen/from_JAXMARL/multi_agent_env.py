@@ -34,12 +34,10 @@ class MultiAgentEnv(object):
         self.observation_spaces = dict()
         self.action_spaces = dict()
 
-    @partial(jax.jit, static_argnums=(0,))
     def reset(self, key: chex.PRNGKey) -> Tuple[Dict[str, chex.Array], State]:
         """Performs resetting of the environment."""
         raise NotImplementedError
 
-    @partial(jax.jit, static_argnums=(0,))
     def step(
         self,
         key: chex.PRNGKey,
@@ -86,7 +84,6 @@ class MultiAgentEnv(object):
         """Action space for a given agent."""
         return self.action_spaces[agent]
 
-    @partial(jax.jit, static_argnums=(0,))
     def get_avail_actions(self, state: State) -> Dict[str, chex.Array]:
         """Returns the available actions for each agent."""
         raise NotImplementedError

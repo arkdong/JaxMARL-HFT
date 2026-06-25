@@ -126,7 +126,6 @@ class MARLEnv(MultiAgentEnv):
             agent_params=params_list
         )
 
-    @partial(jax.jit, static_argnums=(0,))
     def reset_env(self, key: chex.PRNGKey, params: MultiAgentParams) -> Tuple[list[jnp.ndarray], MultiAgentState]:
         #################################
         # Split keys for each agent type
@@ -208,7 +207,6 @@ class MARLEnv(MultiAgentEnv):
 
 
 
-    @partial(jax.jit, static_argnums=(0,))
     def step_env(self,
                  key: chex.PRNGKey,
                  state: MultiAgentState,
@@ -760,7 +758,6 @@ class MARLEnv(MultiAgentEnv):
         return self.observation_spaces
 
 
-    @partial(jax.jit, static_argnums=(0,))
     def reset(self, key: chex.PRNGKey, params: MultiAgentParams) -> Tuple[Dict[str, chex.Array], MultiAgentState]:
         """Performs resetting of the environment."""
 
@@ -772,7 +769,6 @@ class MARLEnv(MultiAgentEnv):
 
 
     # Override the parent step function to handle the list of actions and params object
-    @partial(jax.jit, static_argnums=(0,))
     def step(
         self,
         key: chex.PRNGKey,

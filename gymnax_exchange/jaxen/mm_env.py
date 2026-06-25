@@ -414,7 +414,6 @@ class MarketMakingAgent():
         return self.get_observation(state, params, total_messages,action_prices,executions,old_time,old_mid_price), state, reward, done, info
     
 
-    @partial(jax.jit, static_argnames=("self", "num_msgs_per_step"))
     def reset_env(
             self,
             agent_param: MMEnvParams,
@@ -534,11 +533,9 @@ class MarketMakingAgent():
         def matching_masks(prices_a, prices_cnl):
             res = p_in_cnl(prices_a, prices_cnl)
             return jnp.any(res, axis=1), jnp.any(res, axis=0)
-        @jax.jit
         def argsort_rev(arr):
             """ 'arr' sorted in descending order (LTR priority tie-breaker) """
             return (arr.shape[0] - 1 - jnp.argsort(arr[::-1]))[::-1]
-        @jax.jit
         def rank_rev(arr):
             """ Rank array in descending order, with ties having left-to-right priority. """
             return jnp.argsort(argsort_rev(arr))
