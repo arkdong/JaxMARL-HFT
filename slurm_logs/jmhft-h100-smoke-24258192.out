@@ -1,0 +1,348 @@
+Using software stack: 2024
+Using Python module: Python/3.12.3-GCCcore-13.3.0
+Python 3.12.3
+Job ID: 24258192
+Node: gcn142.local.snellius.surf.nl
+Started: 2026-06-27T22:27:51+02:00
+Repo: /home/adong/JaxMARL-HFT
+Data: /home/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train
+NUM_ENVS: 64
+TOTAL_TIMESTEPS: 50000
+83b76a5193bc70277b7b39947b9017413a6ffc97
+Sat Jun 27 22:27:51 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 595.71.05              Driver Version: 595.71.05      CUDA Version: 13.2     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA H100                    On  |   00000000:26:00.0 Off |                    0 |
+| N/A   34C    P0             69W /  700W |       0MiB /  95830MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+JAX version: 0.10.2
+JAX devices: [CudaDevice(id=0)]
+/gpfs/home4/adong/JaxMARL-HFT
+Num Jax Devices: 1 Device List: [CudaDevice(id=0)]
+Num Jax Devices: 1 Device List: [CudaDevice(id=0)]
+Loading the env config from file 
+	config/env_configs/2_player_fq_fqc.json 
+********* DEBUG ********** 
+ Loaded env_config:  MultiAgentConfig(world_config=World_EnvironmentConfig(maxint=2147483647, init_id=-2, book_depth=10, cancel_mode=1, type_4_interpretation=0, seed=42, nTrades=100, nOrders=100, simulator_mode=0, empty_slot_val=-1, debug_mode=False, check_book_fill=True, start_resolution=64, alphatradePath='/gpfs/home4/adong/JaxMARL-HFT', dataPath='/gpfs/home4/adong/JaxMARL-HFT/data', stock='AMZN', timePeriod='train', n_data_msg_per_step=100, window_selector=-1, ep_type='fixed_steps', episode_time=64, day_start=34200, day_end=57600, tick_size=100, trader_id_range_start=-100, placeholder_order_id=-198, artificial_trader_id_end_episode=-199, artificial_order_id_end_episode=-199, any_message_obs_space=False, order_id_counter_start_when_resetting=-200, shuffle_action_messages=True, use_pickles_for_init=True, save_raw_observations=False), dict_of_agents_configs={'MarketMaking': MarketMaking_EnvironmentConfig(debug_mode=False, short_name='MM', normalize=True, clip_reward=False, exclude_extreme_spreads=False, fixed_action_setting=False, fixed_action=0, simple_nothing_action=True, sell_buy_all_option=False, based_on_mid_price_of_action=True, tenth_action='MarketOrder', bob_v0=1, action_space='fixed_quants', observation_space='basic', reward_function='spooner_asym_damped2', spread_multiplier=3.0, skew_multiplier=5.0, n_ticks_offset=1, fixed_quant_value=1, auto_liquidate_threshold=0, auto_liquidate_alpha=1.0, unwind_price_penalty=0, inv_penalty='none', volume_traded_bonus='none', reference_price='mid', unwind_price='mid', inv_penalty_lambda=1.0, inv_penalty_quadratic_factor=50.0, inv_penalty_threshold=10.0, multiplier_type='tick', reward_scaling_quo=10.0, inventoryPnL_eta=0.6, inventoryPnL_gamma=0.1, rebate_bps=0.4, unrealizedPnL_lambda=0.1, avst_k_parameter=0.61, avst_var_parameter=280, time_delay_obs_act=0, n_actions=10, num_messages_by_agent=4, num_action_messages_by_agent=2), 'Execution': Execution_EnvironmentConfig(debug_mode=False, larger_far_touch_quant=False, normalize=True, short_name='EXE', action_type='pure', task='random', action_space='fixed_quants_complex', observation_space='engineered', reward_function='normal', task_size=600, n_ticks_in_book=1, fixed_quant_value=10, reward_lambda=0.1, reward_scaling_quo=10.0, doom_price_penalty=3, reference_price='far_touch', time_delay_obs_act=0, n_actions=13, num_messages_by_agent=8, num_action_messages_by_agent=4)}, number_of_agents_per_type=[1, 1])
+Note: The sweep parameters in yaml will override these settings.
+Create sweep with ID: 3smemdjc
+Sweep URL: https://wandb.ai/ark-dong-university-of-amsterdam/smoke_AMZN_train_h100/sweeps/3smemdjc
+The sweep ID is:  3smemdjc
+Final check: the wandb.config object used in this run is 
+ 	 {'LR': [0.00025, 0.00025], 'NUM_ENVS': 64, 'NUM_STEPS': 64, 'NUM_STEPS_EVAL': 64, 'GRU_HIDDEN_DIM': 256, 'FC_DIM_SIZE': 256, 'TOTAL_TIMESTEPS': 50000, 'UPDATE_EPOCHS': 4, 'NUM_MINIBATCHES': 4, 'GAMMA': [0.999999999, 0.999], 'GAE_LAMBDA': [0.85, 0.9], 'CLIP_EPS': 0.2, 'SCALE_CLIP_EPS': [False, False], 'ENT_COEF': [0.01, 0.01], 'VF_COEF': [0.5, 0.5], 'MAX_GRAD_NORM': [0.5, 0.5], 'ACTIVATION': ['relu', 'relu'], 'ENV_NAME': 'JAXMARL-Lob-v0', 'NUM_AGENTS_PER_TYPE': [1, 1], 'N_DEVICES': 1, 'ENV_CONFIG': 'config/env_configs/2_player_fq_fqc.json', 'ANNEAL_LR': [True, True], 'ENTITY': 'ark-dong-university-of-amsterdam', 'PROJECT': 'smoke_AMZN_train_h100', 'WANDB_MODE': 'online', 'CALC_EVAL': False, 'TimePeriod': 'train', 'EvalTimePeriod': 'train', 'Calculate Baseline': False, 'Timing': False, 'SWEEP_PARAMETERS': {'AGENT_CONFIGS': {'parameters': {'MarketMaking': {'parameters': {'inv_penalty': {'values': ['none']}}}, 'Execution': {'parameters': {'reward_lambda': {'values': [0.1]}}}}}, 'SEED': {'values': [42]}}, 'world_config': {'artificial_order_id_end_episode': -199, 'order_id_counter_start_when_resetting': -200, 'use_pickles_for_init': True, 'cancel_mode': 1, 'type_4_interpretation': 0, 'check_book_fill': True, 'alphatradePath': '/gpfs/home4/adong/JaxMARL-HFT', 'empty_slot_val': -1, 'episode_time': 64, 'maxint': 2147483647, 'shuffle_action_messages': True, 'nTrades': 100, 'book_depth': 10, 'simulator_mode': 0, 'any_message_obs_space': False, 'save_raw_observations': False, 'artificial_trader_id_end_episode': -199, 'placeholder_order_id': -198, 'stock': 'AMZN', 'n_data_msg_per_step': 100, 'nOrders': 100, 'day_start': 34200, 'timePeriod': 'train', 'start_resolution': 64, 'window_selector': -1, 'init_id': -2, 'trader_id_range_start': -100, 'seed': 42, 'tick_size': 100, 'day_end': 57600, 'dataPath': '/gpfs/home4/adong/JaxMARL-HFT/data', 'debug_mode': False, 'ep_type': 'fixed_steps'}, 'dict_of_agents_configs': {'Execution': {'num_action_messages_by_agent': 4, 'task_size': 600, 'task': 'random', 'action_space': 'fixed_quants_complex', 'time_delay_obs_act': 0, 'n_actions': 13, 'observation_space': 'engineered', 'debug_mode': False, 'n_ticks_in_book': 1, 'fixed_quant_value': 10, 'action_type': 'pure', 'reward_scaling_quo': 10, 'normalize': True, 'reference_price': 'far_touch', 'short_name': 'EXE', 'doom_price_penalty': 3, 'reward_function': 'normal', 'larger_far_touch_quant': False, 'num_messages_by_agent': 8, 'reward_lambda': 0.1}, 'MarketMaking': {'sell_buy_all_option': False, 'fixed_quant_value': 1, 'observation_space': 'basic', 'short_name': 'MM', 'skew_multiplier': 5, 'time_delay_obs_act': 0, 'num_action_messages_by_agent': 2, 'auto_liquidate_threshold': 0, 'unwind_price': 'mid', 'normalize': True, 'n_actions': 10, 'simple_nothing_action': True, 'reward_scaling_quo': 10, 'auto_liquidate_alpha': 1, 'inv_penalty': 'none', 'unrealizedPnL_lambda': 0.1, 'volume_traded_bonus': 'none', 'rebate_bps': 0.4, 'multiplier_type': 'tick', 'inventoryPnL_gamma': 0.1, 'bob_v0': 1, 'inv_penalty_threshold': 10, 'avst_k_parameter': 0.61, 'based_on_mid_price_of_action': True, 'n_ticks_offset': 1, 'inventoryPnL_eta': 0.6, 'inv_penalty_lambda': 1, 'avst_var_parameter': 280, 'fixed_action': 0, 'fixed_action_setting': False, 'exclude_extreme_spreads': False, 'clip_reward': False, 'tenth_action': 'MarketOrder', 'num_messages_by_agent': 4, 'spread_multiplier': 3, 'unwind_price_penalty': 0, 'reward_function': 'spooner_asym_damped2', 'action_space': 'fixed_quants', 'inv_penalty_quadratic_factor': 50, 'reference_price': 'mid', 'debug_mode': False}}, 'number_of_agents_per_type': [1, 1], 'AGENT_CONFIGS': {'Execution': {'reward_lambda': 0.1}, 'MarketMaking': {'inv_penalty': 'none'}}, 'SEED': 42}
+Overriding the Agent config objects with the variable from the sweep parameters.
+The training environment config, after copying of sweep parameters is 
+	  MultiAgentConfig(world_config=World_EnvironmentConfig(maxint=2147483647, init_id=-2, book_depth=10, cancel_mode=1, type_4_interpretation=0, seed=42, nTrades=100, nOrders=100, simulator_mode=0, empty_slot_val=-1, debug_mode=False, check_book_fill=True, start_resolution=64, alphatradePath='/gpfs/home4/adong/JaxMARL-HFT', dataPath='/gpfs/home4/adong/JaxMARL-HFT/data', stock='AMZN', timePeriod='train', n_data_msg_per_step=100, window_selector=-1, ep_type='fixed_steps', episode_time=64, day_start=34200, day_end=57600, tick_size=100, trader_id_range_start=-100, placeholder_order_id=-198, artificial_trader_id_end_episode=-199, artificial_order_id_end_episode=-199, any_message_obs_space=False, order_id_counter_start_when_resetting=-200, shuffle_action_messages=True, use_pickles_for_init=True, save_raw_observations=False), dict_of_agents_configs={'Execution': Execution_EnvironmentConfig(debug_mode=False, larger_far_touch_quant=False, normalize=True, short_name='EXE', action_type='pure', task='random', action_space='fixed_quants_complex', observation_space='engineered', reward_function='normal', task_size=600, n_ticks_in_book=1, fixed_quant_value=10, reward_lambda=0.1, reward_scaling_quo=10, doom_price_penalty=3, reference_price='far_touch', time_delay_obs_act=0, n_actions=13, num_messages_by_agent=8, num_action_messages_by_agent=4), 'MarketMaking': MarketMaking_EnvironmentConfig(debug_mode=False, short_name='MM', normalize=True, clip_reward=False, exclude_extreme_spreads=False, fixed_action_setting=False, fixed_action=0, simple_nothing_action=True, sell_buy_all_option=False, based_on_mid_price_of_action=True, tenth_action='MarketOrder', bob_v0=1, action_space='fixed_quants', observation_space='basic', reward_function='spooner_asym_damped2', spread_multiplier=3, skew_multiplier=5, n_ticks_offset=1, fixed_quant_value=1, auto_liquidate_threshold=0, auto_liquidate_alpha=1, unwind_price_penalty=0, inv_penalty='none', volume_traded_bonus='none', reference_price='mid', unwind_price='mid', inv_penalty_lambda=1, inv_penalty_quadratic_factor=50, inv_penalty_threshold=10, multiplier_type='tick', reward_scaling_quo=10, inventoryPnL_eta=0.6, inventoryPnL_gamma=0.1, rebate_bps=0.4, unrealizedPnL_lambda=0.1, avst_k_parameter=0.61, avst_var_parameter=280, time_delay_obs_act=0, n_actions=10, num_messages_by_agent=4, num_action_messages_by_agent=2)}, number_of_agents_per_type=[1, 1])
+LoadLOBSTER_resample __init__: The datapaths considered are ['/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/']
+LoadLOBSTER_resample __init__: Found 74 message files
+LoadLOBSTER_resample __init__: Found 74 book files
+LoadLOBSTER_resample _load_files: self.message_files:
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-11-12_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-11-13_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-11-14_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-11-17_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-11-18_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-11-19_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-11-20_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-11-21_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-11-24_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-11-25_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-11-26_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-11-28_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-12-01_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-12-02_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-12-03_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-12-04_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-12-05_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-12-08_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-12-09_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-12-10_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-12-11_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-12-12_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-12-15_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-12-16_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-12-17_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-12-18_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-12-19_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-12-22_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-12-23_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-12-24_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-12-26_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-12-29_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-12-30_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2025-12-31_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-01-02_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-01-05_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-01-06_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-01-07_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-01-08_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-01-09_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-01-12_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-01-13_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-01-14_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-01-15_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-01-16_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-01-20_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-01-21_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-01-22_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-01-23_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-01-26_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-01-27_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-01-28_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-01-29_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-01-30_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-02-02_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-02-03_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-02-04_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-02-05_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-02-06_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-02-09_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-02-10_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-02-11_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-02-12_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-02-13_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-02-17_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-02-18_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-02-19_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-02-20_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-02-23_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-02-24_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-02-25_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-02-26_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-02-27_34200000_57600000_message_10.csv
+	/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/AMZN_2026-03-02_34200000_57600000_message_10.csv
+Using 16 workers for parallel loading (74 files)
+
+📦 Processing batch 1/5 (18 files)...
+✓ AMZN_2025-11-28_34200000_57600000_message_10.csv (154.8MB, 1.8MB/s) read:5.79s proc:80.67s total:86.46s
+✓ AMZN_2025-11-26_34200000_57600000_message_10.csv (352.4MB, 1.5MB/s) read:11.40s proc:219.79s total:231.20s
+✓ AMZN_2025-12-03_34200000_57600000_message_10.csv (358.4MB, 1.5MB/s) read:11.57s proc:228.64s total:240.22s
+✓ AMZN_2025-11-12_34200000_57600000_message_10.csv (421.0MB, 1.6MB/s) read:13.75s proc:247.50s total:261.25s
+✓ AMZN_2025-12-01_34200000_57600000_message_10.csv (382.1MB, 1.5MB/s) read:12.42s proc:249.12s total:261.54s
+✓ AMZN_2025-12-05_34200000_57600000_message_10.csv (295.3MB, 1.6MB/s) read:14.41s proc:172.77s total:187.18s
+✓ AMZN_2025-12-04_34200000_57600000_message_10.csv (377.7MB, 1.4MB/s) read:12.28s proc:265.06s total:277.34s
+✓ AMZN_2025-12-02_34200000_57600000_message_10.csv (433.3MB, 1.5MB/s) read:14.55s proc:281.08s total:295.63s
+✓ AMZN_2025-11-25_34200000_57600000_message_10.csv (470.0MB, 1.6MB/s) read:16.35s proc:282.08s total:298.44s
+✓ AMZN_2025-11-24_34200000_57600000_message_10.csv (530.3MB, 1.5MB/s) read:18.13s proc:324.45s total:342.58s
+✓ AMZN_2025-12-08_34200000_57600000_message_10.csv (309.0MB, 2.6MB/s) read:13.76s proc:107.29s total:121.05s
+✓ AMZN_2025-11-14_34200000_57600000_message_10.csv (676.8MB, 1.9MB/s) read:23.09s proc:330.57s total:353.66s
+✓ AMZN_2025-11-13_34200000_57600000_message_10.csv (635.3MB, 1.8MB/s) read:22.21s proc:332.51s total:354.72s
+✓ AMZN_2025-11-19_34200000_57600000_message_10.csv (733.8MB, 1.8MB/s) read:26.82s proc:383.44s total:410.26s
+✓ AMZN_2025-11-17_34200000_57600000_message_10.csv (731.8MB, 1.8MB/s) read:26.12s proc:387.55s total:413.67s
+✓ AMZN_2025-11-21_34200000_57600000_message_10.csv (924.0MB, 2.1MB/s) read:35.05s proc:409.50s total:444.55s
+✓ AMZN_2025-11-18_34200000_57600000_message_10.csv (904.6MB, 1.9MB/s) read:34.18s proc:452.71s total:486.89s
+✓ AMZN_2025-11-20_34200000_57600000_message_10.csv (1028.3MB, 2.1MB/s) read:41.95s proc:448.05s total:490.01s
+   Batch 1 completed in 490.01s (avg: 27.22s/file)
+
+📦 Processing batch 2/5 (18 files)...
+✓ AMZN_2025-12-24_34200000_57600000_message_10.csv (93.4MB, 1.9MB/s) read:3.31s proc:45.64s total:48.95s
+✓ AMZN_2025-12-26_34200000_57600000_message_10.csv (160.8MB, 2.1MB/s) read:5.36s proc:70.91s total:76.26s
+✓ AMZN_2025-12-30_34200000_57600000_message_10.csv (187.5MB, 1.9MB/s) read:6.01s proc:91.47s total:97.48s
+✓ AMZN_2025-12-29_34200000_57600000_message_10.csv (210.3MB, 2.1MB/s) read:6.83s proc:91.93s total:98.76s
+✓ AMZN_2025-12-31_34200000_57600000_message_10.csv (218.0MB, 2.1MB/s) read:6.68s proc:97.53s total:104.21s
+✓ AMZN_2025-12-09_34200000_57600000_message_10.csv (256.1MB, 1.9MB/s) read:8.66s proc:124.19s total:132.85s
+✓ AMZN_2025-12-11_34200000_57600000_message_10.csv (344.6MB, 2.1MB/s) read:12.45s proc:148.16s total:160.62s
+✓ AMZN_2025-12-22_34200000_57600000_message_10.csv (279.5MB, 1.7MB/s) read:9.48s proc:155.91s total:165.39s
+✓ AMZN_2025-12-23_34200000_57600000_message_10.csv (276.5MB, 1.6MB/s) read:9.27s proc:158.68s total:167.95s
+✓ AMZN_2025-12-19_34200000_57600000_message_10.csv (348.2MB, 1.8MB/s) read:11.90s proc:186.95s total:198.85s
+✓ AMZN_2025-12-10_34200000_57600000_message_10.csv (471.8MB, 2.4MB/s) read:17.04s proc:182.09s total:199.13s
+✓ AMZN_2025-12-16_34200000_57600000_message_10.csv (455.9MB, 2.3MB/s) read:16.66s proc:183.12s total:199.78s
+✓ AMZN_2025-12-17_34200000_57600000_message_10.csv (466.0MB, 2.3MB/s) read:16.99s proc:184.90s total:201.89s
+✓ AMZN_2025-12-18_34200000_57600000_message_10.csv (486.3MB, 2.3MB/s) read:18.03s proc:192.49s total:210.51s
+✓ AMZN_2025-12-15_34200000_57600000_message_10.csv (494.0MB, 2.3MB/s) read:18.32s proc:197.37s total:215.69s
+✓ AMZN_2025-12-12_34200000_57600000_message_10.csv (541.1MB, 2.4MB/s) read:21.82s proc:206.59s total:228.41s
+✓ AMZN_2026-01-02_34200000_57600000_message_10.csv (476.2MB, 2.5MB/s) read:27.68s proc:161.03s total:188.71s
+✓ AMZN_2026-01-05_34200000_57600000_message_10.csv (410.7MB, 2.5MB/s) read:22.91s proc:139.75s total:162.66s
+   Batch 2 completed in 238.94s (avg: 13.27s/file)
+
+📦 Processing batch 3/5 (18 files)...
+✓ AMZN_2026-01-16_34200000_57600000_message_10.csv (262.9MB, 1.9MB/s) read:7.98s proc:131.44s total:139.42s
+✓ AMZN_2026-01-26_34200000_57600000_message_10.csv (290.7MB, 1.9MB/s) read:8.43s proc:142.80s total:151.23s
+✓ AMZN_2026-01-22_34200000_57600000_message_10.csv (273.8MB, 1.8MB/s) read:7.97s proc:148.01s total:155.98s
+✓ AMZN_2026-01-09_34200000_57600000_message_10.csv (318.3MB, 1.9MB/s) read:9.12s proc:158.81s total:167.93s
+✓ AMZN_2026-01-12_34200000_57600000_message_10.csv (314.3MB, 1.8MB/s) read:8.85s proc:163.52s total:172.37s
+✓ AMZN_2026-01-23_34200000_57600000_message_10.csv (298.3MB, 1.7MB/s) read:8.84s proc:164.06s total:172.89s
+✓ AMZN_2026-01-15_34200000_57600000_message_10.csv (342.2MB, 1.8MB/s) read:10.55s proc:180.46s total:191.01s
+✓ AMZN_2026-01-27_34200000_57600000_message_10.csv (346.0MB, 1.8MB/s) read:10.28s proc:185.69s total:195.97s
+✓ AMZN_2026-01-08_34200000_57600000_message_10.csv (415.1MB, 2.1MB/s) read:12.61s proc:188.57s total:201.17s
+✓ AMZN_2026-01-13_34200000_57600000_message_10.csv (426.6MB, 2.0MB/s) read:13.68s proc:202.21s total:215.89s
+✓ AMZN_2026-01-20_34200000_57600000_message_10.csv (412.0MB, 1.9MB/s) read:12.73s proc:208.88s total:221.61s
+✓ AMZN_2026-01-14_34200000_57600000_message_10.csv (487.2MB, 2.2MB/s) read:16.48s proc:205.31s total:221.79s
+✓ AMZN_2026-01-28_34200000_57600000_message_10.csv (422.3MB, 1.9MB/s) read:12.59s proc:212.55s total:225.14s
+✓ AMZN_2026-01-21_34200000_57600000_message_10.csv (502.9MB, 2.2MB/s) read:18.80s proc:208.02s total:226.81s
+✓ AMZN_2026-01-07_34200000_57600000_message_10.csv (385.9MB, 1.7MB/s) read:12.20s proc:215.96s total:228.16s
+✓ AMZN_2026-01-06_34200000_57600000_message_10.csv (456.7MB, 1.8MB/s) read:14.48s proc:242.77s total:257.25s
+✓ AMZN_2026-01-30_34200000_57600000_message_10.csv (781.7MB, 4.5MB/s) read:30.57s proc:143.50s total:174.07s
+✓ AMZN_2026-01-29_34200000_57600000_message_10.csv (767.6MB, 4.0MB/s) read:34.26s proc:158.78s total:193.04s
+   Batch 3 completed in 332.47s (avg: 18.47s/file)
+
+📦 Processing batch 4/5 (18 files)...
+✓ AMZN_2026-02-02_34200000_57600000_message_10.csv (408.1MB, 1.9MB/s) read:13.33s proc:202.75s total:216.09s
+✓ AMZN_2026-02-19_34200000_57600000_message_10.csv (507.0MB, 2.3MB/s) read:15.67s proc:208.87s total:224.54s
+✓ AMZN_2026-02-24_34200000_57600000_message_10.csv (514.1MB, 2.0MB/s) read:15.60s proc:245.18s total:260.78s
+✓ AMZN_2026-02-18_34200000_57600000_message_10.csv (570.7MB, 1.7MB/s) read:16.60s proc:319.62s total:336.22s
+✓ AMZN_2026-02-23_34200000_57600000_message_10.csv (616.0MB, 1.7MB/s) read:18.71s proc:346.64s total:365.36s
+✓ AMZN_2026-02-25_34200000_57600000_message_10.csv (387.2MB, 2.1MB/s) read:15.64s proc:171.14s total:186.78s
+✓ AMZN_2026-02-03_34200000_57600000_message_10.csv (753.6MB, 1.8MB/s) read:22.99s proc:397.49s total:420.49s
+✓ AMZN_2026-02-10_34200000_57600000_message_10.csv (660.7MB, 1.5MB/s) read:19.70s proc:408.03s total:427.73s
+✓ AMZN_2026-02-17_34200000_57600000_message_10.csv (924.0MB, 1.9MB/s) read:27.71s proc:448.29s total:476.01s
+✓ AMZN_2026-02-20_34200000_57600000_message_10.csv (968.3MB, 2.0MB/s) read:27.52s proc:450.05s total:477.56s
+✓ AMZN_2026-02-11_34200000_57600000_message_10.csv (754.9MB, 1.6MB/s) read:23.05s proc:455.47s total:478.52s
+✓ AMZN_2026-02-13_34200000_57600000_message_10.csv (848.6MB, 1.7MB/s) read:25.48s proc:473.29s total:498.77s
+✓ AMZN_2026-02-09_34200000_57600000_message_10.csv (698.4MB, 1.4MB/s) read:20.77s proc:480.47s total:501.24s
+✓ AMZN_2026-02-05_34200000_57600000_message_10.csv (890.2MB, 1.8MB/s) read:26.08s proc:482.32s total:508.39s
+✓ AMZN_2026-02-04_34200000_57600000_message_10.csv (1145.6MB, 2.2MB/s) read:35.71s proc:478.36s total:514.07s
+✓ AMZN_2026-02-26_34200000_57600000_message_10.csv (787.6MB, 2.6MB/s) read:32.80s proc:274.53s total:307.33s
+✓ AMZN_2026-02-12_34200000_57600000_message_10.csv (957.7MB, 1.8MB/s) read:27.32s proc:515.10s total:542.42s
+✓ AMZN_2026-02-06_34200000_57600000_message_10.csv (1247.5MB, 1.4MB/s) read:40.73s proc:820.83s total:861.56s
+   Batch 4 completed in 861.57s (avg: 47.87s/file)
+
+📦 Processing batch 5/5 (2 files)...
+✓ AMZN_2026-03-02_34200000_57600000_message_10.csv (747.9MB, 6.9MB/s) read:7.67s proc:100.35s total:108.02s
+✓ AMZN_2026-02-27_34200000_57600000_message_10.csv (771.0MB, 5.9MB/s) read:7.82s proc:122.15s total:129.97s
+   Batch 5 completed in 129.98s (avg: 64.99s/file)
+
+🎉 Parallel loading completed!
+   Total time: 2053.00s
+   Files processed: 74/74
+   Average time per file: 27.74s
+   Effective throughput: 0.04 files/s
+Lengths:  74 74 74 74
+Shapes of first elements:  (1510850, 8) (236,) (236,) (236, 40) (236,)
+Shapes after concat:  (138816492, 8) (21653,) (21653,) (21653, 40) (21653,)
+LoadLOBSTER_resample run_loading: saving arrays to /gpfs/home4/adong/JaxMARL-HFT/saved_npz/loaded_lobster_LoadLOBSTER_resample_AMZN_train_10_fixed_steps_64_64_100_34200_57600.npz
+BaseLOBEnv _init_states:  pre-reset in the initialization
+BaseLOBEnv _init_states: pre-reset will be saved to or loaded from 
+	/gpfs/home4/adong/JaxMARL-HFT/pre_reset_states/ResetStates_BaseLOBEnv_AMZN_train_10_fixed_steps_64_64_100_34200_57600.pkl
+BaseLOBEnv _init_states: computing initial states afresh from orderbook data
+BaseLOBEnv _init_states: saved initial states successfully
+BaseLOBEnv _init_states: All initial reset states are ready.
+Multi-device: 1 device(s) detected, sharding 64 envs across them
+[2026-06-27 23:23:16,290][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 1
+Saving checkpoints to directory: 
+ 	 /gpfs/home4/adong/JaxMARL-HFT/checkpoints/MARLCheckpoints/smoke_AMZN_train_h100/divine-sweep-1
+Starting Update step 1/12
+Finished compiling
+Update step: 0
+Action shape is  (64, 64)
+Action shape is  (64, 64)
+avg_reward_EXE -0.9427628517150879
+avg_reward_MM -0.011724851094186306
+Update step 1 completed
+Saving checkpoint 1
+[2026-06-27 23:23:36,087][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 2
+Starting Update step 2/12
+Finished compiling
+Update step: 1
+Action shape is  (64, 64)
+Action shape is  (64, 64)
+avg_reward_EXE -0.8766665458679199
+avg_reward_MM -0.010246392339468002
+Update step 2 completed
+Saving checkpoint 2
+[2026-06-27 23:23:51,243][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 4
+Starting Update step 3/12
+Update step: 2
+Action shape is  (64, 64)
+Action shape is  (64, 64)
+avg_reward_EXE -0.7564480304718018
+avg_reward_MM -0.008215045556426048
+Update step 3 completed
+Saving checkpoint 3
+[2026-06-27 23:23:55,930][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 6
+Starting Update step 4/12
+Update step: 3
+Action shape is  (64, 64)
+Action shape is  (64, 64)
+avg_reward_EXE -0.757663369178772
+avg_reward_MM -0.00885644368827343
+Update step 4 completed
+Saving checkpoint 4
+[2026-06-27 23:24:00,583][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 8
+Starting Update step 5/12
+Update step: 4
+Action shape is  (64, 64)
+Action shape is  (64, 64)
+avg_reward_EXE -0.9735395908355713
+avg_reward_MM -0.007669645361602306
+Update step 5 completed
+Saving checkpoint 5
+[2026-06-27 23:24:05,286][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 10
+Starting Update step 6/12
+Update step: 5
+Action shape is  (64, 64)
+Action shape is  (64, 64)
+avg_reward_EXE -0.8605825901031494
+avg_reward_MM -0.005005891900509596
+Update step 6 completed
+Saving checkpoint 6
+[2026-06-27 23:24:09,925][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 12
+Starting Update step 7/12
+Update step: 6
+Action shape is  (64, 64)
+Action shape is  (64, 64)
+avg_reward_EXE -0.6137517690658569
+avg_reward_MM -0.0012608092511072755
+Update step 7 completed
+Saving checkpoint 7
+[2026-06-27 23:24:14,633][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 14
+Starting Update step 8/12
+Update step: 7
+Action shape is  (64, 64)
+Action shape is  (64, 64)
+avg_reward_EXE -1.1716375350952148
+avg_reward_MM -0.0057838973589241505
+Update step 8 completed
+Saving checkpoint 8
+[2026-06-27 23:24:19,335][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 16
+Starting Update step 9/12
+Update step: 8
+Action shape is  (64, 64)
+Action shape is  (64, 64)
+avg_reward_EXE -0.8957167863845825
+avg_reward_MM -0.00865381769835949
+Update step 9 completed
+Saving checkpoint 9
+[2026-06-27 23:24:24,019][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 18
+Starting Update step 10/12
+Update step: 9
+Action shape is  (64, 64)
+Action shape is  (64, 64)
+avg_reward_EXE -0.8094967007637024
+avg_reward_MM -0.009949185885488987
+Update step 10 completed
+Saving checkpoint 10
+[2026-06-27 23:24:28,700][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 20
+Starting Update step 11/12
+Update step: 10
+Action shape is  (64, 64)
+Action shape is  (64, 64)
+avg_reward_EXE -0.9035413265228271
+avg_reward_MM -0.00865925196558237
+Update step 11 completed
+Saving checkpoint 11
+[2026-06-27 23:24:33,366][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 22
+Starting Update step 12/12
+Update step: 11
+Action shape is  (64, 64)
+Action shape is  (64, 64)
+avg_reward_EXE -0.9141975045204163
+avg_reward_MM -0.009452082216739655
+Update step 12 completed
+Saving checkpoint 12
+[2026-06-27 23:24:37,967][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 24
+Finished: 2026-06-27T23:24:52+02:00

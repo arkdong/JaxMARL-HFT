@@ -1,0 +1,51 @@
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from /home/adong/.netrc.
+wandb: Agent Starting Run: vxuflk7e with config:
+wandb: 	AGENT_CONFIGS: {'Execution': {'reward_lambda': 0.1}, 'MarketMaking': {'inv_penalty': 'none'}}
+wandb: 	SEED: 42
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from /home/adong/.netrc.
+wandb: Currently logged in as: ark-dong (ark-dong-university-of-amsterdam) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: WARNING Ignoring project 'smoke_AMZN_train_h100' when running a sweep.
+wandb: WARNING Ignoring entity 'ark-dong-university-of-amsterdam' when running a sweep.
+wandb: WARNING config_exclude_keys is deprecated. Use `config=wandb.helper.parse_config(config_object, exclude=('key',))` instead.
+wandb: Tracking run with wandb version 0.28.0
+wandb: Run data is saved locally in /gpfs/home4/adong/JaxMARL-HFT/wandb/run-20260627_222808-vxuflk7e
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run divine-sweep-1
+wandb: ⭐️ View project at https://wandb.ai/ark-dong-university-of-amsterdam/smoke_AMZN_train_h100
+wandb: 🧹 View sweep at https://wandb.ai/ark-dong-university-of-amsterdam/smoke_AMZN_train_h100/sweeps/3smemdjc
+wandb: 🚀 View run at https://wandb.ai/ark-dong-university-of-amsterdam/smoke_AMZN_train_h100/runs/vxuflk7e
+wandb: updating run metadata
+wandb: uploading config.yaml; uploading output.log; uploading wandb-summary.json
+wandb: 
+wandb: Run history:
+wandb:  agent_EXE/action_0 ▁▁▁▅▆▇▇█▅▅▅▆
+wandb:  agent_EXE/action_1 ██▆▄▃▂▂▃▂▃▃▁
+wandb: agent_EXE/action_10 █▆▅▃▃▂▂▂▁▂▁▁
+wandb: agent_EXE/action_11 ▁▃█▇▃▅▄▃▅▁▅▅
+wandb: agent_EXE/action_12 ▁▂▁▃▄▅▇▆███▇
+wandb:  agent_EXE/action_2 ▁▄▅▃▄▅▃▄▆▇█▆
+wandb:  agent_EXE/action_3 ▁▁▂▄▅▄▇▆█▆▇█
+wandb:  agent_EXE/action_4 ▄▄▅▂▆█▂▄▄▆▄▁
+wandb:  agent_EXE/action_5 █▅▅▄▃▂▂▂▂▁▁▁
+wandb:  agent_EXE/action_6 █▇▄▃▃▂▃▂▂▂▁▂
+wandb:                +120 ...
+wandb: 
+wandb: Run summary:
+wandb:  agent_EXE/action_0 13.13477
+wandb:  agent_EXE/action_1 3.4668
+wandb: agent_EXE/action_10 3.73535
+wandb: agent_EXE/action_11 8.64258
+wandb: agent_EXE/action_12 11.23047
+wandb:  agent_EXE/action_2 9.27734
+wandb:  agent_EXE/action_3 11.37695
+wandb:  agent_EXE/action_4 6.49414
+wandb:  agent_EXE/action_5 2.90527
+wandb:  agent_EXE/action_6 4.05273
+wandb:                +120 ...
+wandb: 
+wandb: 🚀 View run divine-sweep-1 at: https://wandb.ai/ark-dong-university-of-amsterdam/smoke_AMZN_train_h100/runs/vxuflk7e
+wandb: ⭐️ View project at: https://wandb.ai/ark-dong-university-of-amsterdam/smoke_AMZN_train_h100
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260627_222808-vxuflk7e/logs
+wandb: Sweep Agent: Waiting for job.
+wandb: Sweep Agent: Exiting.

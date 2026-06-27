@@ -1,4 +1,4 @@
-# Those hparams which are in a list 
+# Those hparams which are in a list
 # apply differently to each ntwrk
 # Should match with NUM_AGENTS_PER_TYPE
 
@@ -28,18 +28,18 @@
 "ANNEAL_LR": [True,True]
 
 # WandB Params
-"ENTITY": "your-wandb-entity"
-"PROJECT": "2PLayer" #"v4_2Player_reference_price_ablation" #"DEBUG"
+"ENTITY": "ark-dong-university-of-amsterdam"
+"PROJECT": "Thesis" #"v4_2Player_reference_price_ablation" #"DEBUG"
 "WANDB_MODE" : "online"
 
 # High-Level Params
 "CALC_EVAL" : False
-"TimePeriod" : "2024"
-"EvalTimePeriod" : "2024"
+"TimePeriod" : "train"
+"EvalTimePeriod" : "train"
 "Calculate Baseline" : False
 "Timing" : False
 
-SWEEP_PARAMETERS: 
+SWEEP_PARAMETERS:
         # LR:
         #   values: [[0.0015],[0.001],[0.0005]]
         # GAMMA:

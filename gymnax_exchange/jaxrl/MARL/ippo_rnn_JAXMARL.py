@@ -9,8 +9,8 @@ import csv
 import wandb.sdk
 
 from gymnax_exchange.jaxob.config_io import load_config_from_file, save_config_to_file
-os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = "0.95"
-os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "true"
+os.environ.setdefault("XLA_PYTHON_CLIENT_MEM_FRACTION", "0.95")
+os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "true")
 # os.environ["JAX_CHECK_TRACER_LEAKS"] = "true"
 # os.environ["XLA_PYTHON_CLIENT_ALLOCATOR"] = "platform"
 import logging

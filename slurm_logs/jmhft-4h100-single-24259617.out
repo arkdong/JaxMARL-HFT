@@ -1,0 +1,368 @@
+Using software stack: 2024
+Using Python module: Python/3.12.3-GCCcore-13.3.0
+Python 3.12.3
+Job ID: 24259617
+Node: gcn95.local.snellius.surf.nl
+Started: 2026-06-28T00:25:40+02:00
+CUDA_VISIBLE_DEVICES=0,1,2,3
+Sun Jun 28 00:25:40 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 595.71.05              Driver Version: 595.71.05      CUDA Version: 13.2     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA H100                    On  |   00000000:06:00.0 Off |                    0 |
+| N/A   33C    P0             67W /  700W |       0MiB /  95830MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+|   1  NVIDIA H100                    On  |   00000000:26:00.0 Off |                    0 |
+| N/A   32C    P0             66W /  700W |       0MiB /  95830MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+|   2  NVIDIA H100                    On  |   00000000:A6:00.0 Off |                    0 |
+| N/A   33C    P0             67W /  700W |       0MiB /  95830MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+|   3  NVIDIA H100                    On  |   00000000:C6:00.0 Off |                    0 |
+| N/A   32C    P0             64W /  700W |       0MiB /  95830MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+CUDA_VISIBLE_DEVICES: 0,1,2,3
+JAX devices: [CudaDevice(id=0), CudaDevice(id=1), CudaDevice(id=2), CudaDevice(id=3)]
+JAX local device count: 4
+/gpfs/home4/adong/JaxMARL-HFT
+Num Jax Devices: 4 Device List: [CudaDevice(id=0), CudaDevice(id=1), CudaDevice(id=2), CudaDevice(id=3)]
+Num Jax Devices: 4 Device List: [CudaDevice(id=0), CudaDevice(id=1), CudaDevice(id=2), CudaDevice(id=3)]
+Loading the env config from file 
+	config/env_configs/2_player_fq_fqc.json 
+********* DEBUG ********** 
+ Loaded env_config:  MultiAgentConfig(world_config=World_EnvironmentConfig(maxint=2147483647, init_id=-2, book_depth=10, cancel_mode=1, type_4_interpretation=0, seed=42, nTrades=100, nOrders=100, simulator_mode=0, empty_slot_val=-1, debug_mode=False, check_book_fill=True, start_resolution=64, alphatradePath='/gpfs/home4/adong/JaxMARL-HFT', dataPath='/gpfs/home4/adong/JaxMARL-HFT/data', stock='AMZN', timePeriod='train', n_data_msg_per_step=100, window_selector=-1, ep_type='fixed_steps', episode_time=64, day_start=34200, day_end=57600, tick_size=100, trader_id_range_start=-100, placeholder_order_id=-198, artificial_trader_id_end_episode=-199, artificial_order_id_end_episode=-199, any_message_obs_space=False, order_id_counter_start_when_resetting=-200, shuffle_action_messages=True, use_pickles_for_init=True, save_raw_observations=False), dict_of_agents_configs={'MarketMaking': MarketMaking_EnvironmentConfig(debug_mode=False, short_name='MM', normalize=True, clip_reward=False, exclude_extreme_spreads=False, fixed_action_setting=False, fixed_action=0, simple_nothing_action=True, sell_buy_all_option=False, based_on_mid_price_of_action=True, tenth_action='MarketOrder', bob_v0=1, action_space='fixed_quants', observation_space='basic', reward_function='spooner_asym_damped2', spread_multiplier=3.0, skew_multiplier=5.0, n_ticks_offset=1, fixed_quant_value=1, auto_liquidate_threshold=0, auto_liquidate_alpha=1.0, unwind_price_penalty=0, inv_penalty='none', volume_traded_bonus='none', reference_price='mid', unwind_price='mid', inv_penalty_lambda=1.0, inv_penalty_quadratic_factor=50.0, inv_penalty_threshold=10.0, multiplier_type='tick', reward_scaling_quo=10.0, inventoryPnL_eta=0.6, inventoryPnL_gamma=0.1, rebate_bps=0.4, unrealizedPnL_lambda=0.1, avst_k_parameter=0.61, avst_var_parameter=280, time_delay_obs_act=0, n_actions=10, num_messages_by_agent=4, num_action_messages_by_agent=2), 'Execution': Execution_EnvironmentConfig(debug_mode=False, larger_far_touch_quant=False, normalize=True, short_name='EXE', action_type='pure', task='random', action_space='fixed_quants_complex', observation_space='engineered', reward_function='normal', task_size=600, n_ticks_in_book=1, fixed_quant_value=10, reward_lambda=0.1, reward_scaling_quo=10.0, doom_price_penalty=3, reference_price='far_touch', time_delay_obs_act=0, n_actions=13, num_messages_by_agent=8, num_action_messages_by_agent=4)}, number_of_agents_per_type=[1, 1])
+Note: The sweep parameters in yaml will override these settings.
+Running single training (no WandB sweep).
+Final check: the wandb.config object used in this run is 
+ 	 {'LR': [0.00025, 0.00025], 'NUM_ENVS': 256, 'NUM_STEPS': 64, 'NUM_STEPS_EVAL': 64, 'GRU_HIDDEN_DIM': 256, 'FC_DIM_SIZE': 256, 'TOTAL_TIMESTEPS': 524288, 'UPDATE_EPOCHS': 4, 'NUM_MINIBATCHES': 4, 'GAMMA': [0.999999999, 0.999], 'GAE_LAMBDA': [0.85, 0.9], 'CLIP_EPS': 0.2, 'SCALE_CLIP_EPS': [False, False], 'ENT_COEF': [0.01, 0.01], 'VF_COEF': [0.5, 0.5], 'MAX_GRAD_NORM': [0.5, 0.5], 'ACTIVATION': ['relu', 'relu'], 'ENV_NAME': 'JAXMARL-Lob-v0', 'NUM_AGENTS_PER_TYPE': [1, 1], 'SEED': 42, 'N_DEVICES': 4, 'ENV_CONFIG': 'config/env_configs/2_player_fq_fqc.json', 'ANNEAL_LR': [True, True], 'ENTITY': 'ark-dong-university-of-amsterdam', 'PROJECT': 'h100_4gpu_single_test', 'WANDB_MODE': 'disabled', 'CALC_EVAL': False, 'TimePeriod': 'train', 'EvalTimePeriod': 'train', 'Calculate Baseline': False, 'Timing': True, 'SWEEP_PARAMETERS': {'SEED': {'values': [42]}, 'AGENT_CONFIGS': {'parameters': {'MarketMaking': {'parameters': {'inv_penalty': {'values': ['none']}}}, 'Execution': {'parameters': {'reward_lambda': {'values': [0.1]}}}}}}, 'world_config': {'maxint': 2147483647, 'init_id': -2, 'book_depth': 10, 'cancel_mode': 1, 'type_4_interpretation': 0, 'seed': 42, 'nTrades': 100, 'nOrders': 100, 'simulator_mode': 0, 'empty_slot_val': -1, 'debug_mode': False, 'check_book_fill': True, 'start_resolution': 64, 'alphatradePath': '/gpfs/home4/adong/JaxMARL-HFT', 'dataPath': '/gpfs/home4/adong/JaxMARL-HFT/data', 'stock': 'AMZN', 'timePeriod': 'train', 'n_data_msg_per_step': 100, 'window_selector': -1, 'ep_type': 'fixed_steps', 'episode_time': 64, 'day_start': 34200, 'day_end': 57600, 'tick_size': 100, 'trader_id_range_start': -100, 'placeholder_order_id': -198, 'artificial_trader_id_end_episode': -199, 'artificial_order_id_end_episode': -199, 'any_message_obs_space': False, 'order_id_counter_start_when_resetting': -200, 'shuffle_action_messages': True, 'use_pickles_for_init': True, 'save_raw_observations': False}, 'dict_of_agents_configs': {'MarketMaking': {'debug_mode': False, 'short_name': 'MM', 'normalize': True, 'clip_reward': False, 'exclude_extreme_spreads': False, 'fixed_action_setting': False, 'fixed_action': 0, 'simple_nothing_action': True, 'sell_buy_all_option': False, 'based_on_mid_price_of_action': True, 'tenth_action': 'MarketOrder', 'bob_v0': 1, 'action_space': 'fixed_quants', 'observation_space': 'basic', 'reward_function': 'spooner_asym_damped2', 'spread_multiplier': 3.0, 'skew_multiplier': 5.0, 'n_ticks_offset': 1, 'fixed_quant_value': 1, 'auto_liquidate_threshold': 0, 'auto_liquidate_alpha': 1.0, 'unwind_price_penalty': 0, 'inv_penalty': 'none', 'volume_traded_bonus': 'none', 'reference_price': 'mid', 'unwind_price': 'mid', 'inv_penalty_lambda': 1.0, 'inv_penalty_quadratic_factor': 50.0, 'inv_penalty_threshold': 10.0, 'multiplier_type': 'tick', 'reward_scaling_quo': 10.0, 'inventoryPnL_eta': 0.6, 'inventoryPnL_gamma': 0.1, 'rebate_bps': 0.4, 'unrealizedPnL_lambda': 0.1, 'avst_k_parameter': 0.61, 'avst_var_parameter': 280.0, 'time_delay_obs_act': 0, 'n_actions': 10, 'num_messages_by_agent': 4, 'num_action_messages_by_agent': 2}, 'Execution': {'debug_mode': False, 'larger_far_touch_quant': False, 'normalize': True, 'short_name': 'EXE', 'action_type': 'pure', 'task': 'random', 'action_space': 'fixed_quants_complex', 'observation_space': 'engineered', 'reward_function': 'normal', 'task_size': 600, 'n_ticks_in_book': 1, 'fixed_quant_value': 10, 'reward_lambda': 0.1, 'reward_scaling_quo': 10.0, 'doom_price_penalty': 3, 'reference_price': 'far_touch', 'time_delay_obs_act': 0, 'n_actions': 13, 'num_messages_by_agent': 8, 'num_action_messages_by_agent': 4}}, 'number_of_agents_per_type': [1, 1]}
+Overriding the Agent config objects with the variable from the sweep parameters.
+The training environment config, after copying of sweep parameters is 
+	  MultiAgentConfig(world_config=World_EnvironmentConfig(maxint=2147483647, init_id=-2, book_depth=10, cancel_mode=1, type_4_interpretation=0, seed=42, nTrades=100, nOrders=100, simulator_mode=0, empty_slot_val=-1, debug_mode=False, check_book_fill=True, start_resolution=64, alphatradePath='/gpfs/home4/adong/JaxMARL-HFT', dataPath='/gpfs/home4/adong/JaxMARL-HFT/data', stock='AMZN', timePeriod='train', n_data_msg_per_step=100, window_selector=-1, ep_type='fixed_steps', episode_time=64, day_start=34200, day_end=57600, tick_size=100, trader_id_range_start=-100, placeholder_order_id=-198, artificial_trader_id_end_episode=-199, artificial_order_id_end_episode=-199, any_message_obs_space=False, order_id_counter_start_when_resetting=-200, shuffle_action_messages=True, use_pickles_for_init=True, save_raw_observations=False), dict_of_agents_configs={'MarketMaking': MarketMaking_EnvironmentConfig(debug_mode=False, short_name='MM', normalize=True, clip_reward=False, exclude_extreme_spreads=False, fixed_action_setting=False, fixed_action=0, simple_nothing_action=True, sell_buy_all_option=False, based_on_mid_price_of_action=True, tenth_action='MarketOrder', bob_v0=1, action_space='fixed_quants', observation_space='basic', reward_function='spooner_asym_damped2', spread_multiplier=3.0, skew_multiplier=5.0, n_ticks_offset=1, fixed_quant_value=1, auto_liquidate_threshold=0, auto_liquidate_alpha=1.0, unwind_price_penalty=0, inv_penalty='none', volume_traded_bonus='none', reference_price='mid', unwind_price='mid', inv_penalty_lambda=1.0, inv_penalty_quadratic_factor=50.0, inv_penalty_threshold=10.0, multiplier_type='tick', reward_scaling_quo=10.0, inventoryPnL_eta=0.6, inventoryPnL_gamma=0.1, rebate_bps=0.4, unrealizedPnL_lambda=0.1, avst_k_parameter=0.61, avst_var_parameter=280.0, time_delay_obs_act=0, n_actions=10, num_messages_by_agent=4, num_action_messages_by_agent=2), 'Execution': Execution_EnvironmentConfig(debug_mode=False, larger_far_touch_quant=False, normalize=True, short_name='EXE', action_type='pure', task='random', action_space='fixed_quants_complex', observation_space='engineered', reward_function='normal', task_size=600, n_ticks_in_book=1, fixed_quant_value=10, reward_lambda=0.1, reward_scaling_quo=10.0, doom_price_penalty=3, reference_price='far_touch', time_delay_obs_act=0, n_actions=13, num_messages_by_agent=8, num_action_messages_by_agent=4)}, number_of_agents_per_type=[1, 1])
+LoadLOBSTER_resample __init__: The datapaths considered are ['/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train/']
+LoadLOBSTER_resample __init__: Found 74 message files
+LoadLOBSTER_resample __init__: Found 74 book files
+LoadLOBSTER_resample run_loading: loading cached arrays from /gpfs/home4/adong/JaxMARL-HFT/saved_npz/loaded_lobster_LoadLOBSTER_resample_AMZN_train_10_fixed_steps_64_64_100_34200_57600.npz
+BaseLOBEnv _init_states:  pre-reset in the initialization
+BaseLOBEnv _init_states: pre-reset will be saved to or loaded from 
+	/gpfs/home4/adong/JaxMARL-HFT/pre_reset_states/ResetStates_BaseLOBEnv_AMZN_train_10_fixed_steps_64_64_100_34200_57600.pkl
+BaseLOBEnv _init_states: initial states have been loaded successfully
+BaseLOBEnv _init_states: All initial reset states are ready.
+Multi-device: 4 device(s) detected, sharding 256 envs across them
+[2026-06-28 00:26:40,769][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 1
+Saving checkpoints to directory: 
+ 	 /gpfs/home4/adong/JaxMARL-HFT/checkpoints/MARLCheckpoints/h100_4gpu_single_test/dummy-2su342uq
+Starting Update step 1/32
+Finished compiling
+Update step: 0
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM -0.008464353159070015
+avg_reward_EXE -0.9390621185302734
+Update step 1 completed
+Param sharding: NamedSharding(mesh=Mesh('batch': 4, axis_types=(Auto,)), spec=P(), memory_kind=device)
+Obs sharding: NamedSharding(mesh=Mesh('batch': 4, axis_types=(Auto,)), spec=P('batch',), memory_kind=device)
+Saving checkpoint 1
+[2026-06-28 00:27:04,500][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 2
+Starting Update step 2/32
+Finished compiling
+Update step: 1
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM -0.00582486717030406
+avg_reward_EXE -0.6937054395675659
+Update step 2 completed
+Saving checkpoint 2
+[2026-06-28 00:27:25,493][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 4
+Starting Update step 3/32
+Update step: 2
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM -0.005525998771190643
+avg_reward_EXE -0.7946068644523621
+Update step 3 completed
+Saving checkpoint 3
+[2026-06-28 00:27:32,869][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 6
+Starting Update step 4/32
+Update step: 3
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM -0.005182141903787851
+avg_reward_EXE -0.6082130670547485
+Update step 4 completed
+Saving checkpoint 4
+[2026-06-28 00:27:40,241][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 8
+Starting Update step 5/32
+Update step: 4
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM -0.006485080346465111
+avg_reward_EXE -0.7974428534507751
+Update step 5 completed
+Saving checkpoint 5
+[2026-06-28 00:27:47,739][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 10
+Starting Update step 6/32
+Update step: 5
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM -0.005691769067198038
+avg_reward_EXE -0.7981065511703491
+Update step 6 completed
+Saving checkpoint 6
+[2026-06-28 00:27:55,162][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 12
+Starting Update step 7/32
+Update step: 6
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM -0.006706533022224903
+avg_reward_EXE -0.9864377379417419
+Update step 7 completed
+Saving checkpoint 7
+[2026-06-28 00:28:02,681][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 14
+Starting Update step 8/32
+Update step: 7
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM -0.0041144127026200294
+avg_reward_EXE -1.0337042808532715
+Update step 8 completed
+Saving checkpoint 8
+[2026-06-28 00:28:10,159][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 16
+Starting Update step 9/32
+Update step: 8
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM -0.005044827703386545
+avg_reward_EXE -1.1024165153503418
+Update step 9 completed
+Saving checkpoint 9
+[2026-06-28 00:28:17,684][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 18
+Starting Update step 10/32
+Update step: 9
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM -0.003430563025176525
+avg_reward_EXE -0.9934858083724976
+Update step 10 completed
+Saving checkpoint 10
+[2026-06-28 00:28:25,070][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 20
+Starting Update step 11/32
+Update step: 10
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM -0.002380422316491604
+avg_reward_EXE -1.355352759361267
+Update step 11 completed
+Saving checkpoint 11
+[2026-06-28 00:28:32,858][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 22
+Starting Update step 12/32
+Update step: 11
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM -0.0025743632577359676
+avg_reward_EXE -1.0703904628753662
+Update step 12 completed
+Saving checkpoint 12
+[2026-06-28 00:28:40,586][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 24
+Starting Update step 13/32
+Update step: 12
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM -0.0032520515378564596
+avg_reward_EXE -1.290647268295288
+Update step 13 completed
+Saving checkpoint 13
+[2026-06-28 00:28:48,499][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 26
+Starting Update step 14/32
+Update step: 13
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM -0.002677386859431863
+avg_reward_EXE -0.9860875606536865
+Update step 14 completed
+Saving checkpoint 14
+[2026-06-28 00:28:56,628][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 28
+Starting Update step 15/32
+Update step: 14
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM 0.0036535845138132572
+avg_reward_EXE -1.2481493949890137
+Update step 15 completed
+Saving checkpoint 15
+[2026-06-28 00:29:04,704][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 30
+Starting Update step 16/32
+Update step: 15
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM 0.002779334783554077
+avg_reward_EXE -1.415716290473938
+Update step 16 completed
+Saving checkpoint 16
+[2026-06-28 00:29:12,660][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 32
+Starting Update step 17/32
+Update step: 16
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM 0.0030911527574062347
+avg_reward_EXE -1.4094064235687256
+Update step 17 completed
+Saving checkpoint 17
+[2026-06-28 00:29:20,643][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 34
+Starting Update step 18/32
+Update step: 17
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM 0.007334738504141569
+avg_reward_EXE -1.1865769624710083
+Update step 18 completed
+Saving checkpoint 18
+[2026-06-28 00:29:28,671][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 36
+Starting Update step 19/32
+Update step: 18
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM 0.00807400606572628
+avg_reward_EXE -1.1840312480926514
+Update step 19 completed
+Saving checkpoint 19
+[2026-06-28 00:29:36,733][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 38
+Starting Update step 20/32
+Update step: 19
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM 0.007203410379588604
+avg_reward_EXE -1.2438368797302246
+Update step 20 completed
+Saving checkpoint 20
+[2026-06-28 00:29:44,849][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 40
+Starting Update step 21/32
+Update step: 20
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM 0.007470911368727684
+avg_reward_EXE -1.2664954662322998
+Update step 21 completed
+Saving checkpoint 21
+[2026-06-28 00:29:52,837][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 42
+Starting Update step 22/32
+Update step: 21
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM 0.008556714281439781
+avg_reward_EXE -1.2504191398620605
+Update step 22 completed
+Saving checkpoint 22
+[2026-06-28 00:30:00,950][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 44
+Starting Update step 23/32
+Update step: 22
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM 0.00540520716458559
+avg_reward_EXE -1.1182334423065186
+Update step 23 completed
+Saving checkpoint 23
+[2026-06-28 00:30:08,992][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 46
+Starting Update step 24/32
+Update step: 23
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM 0.007805108092725277
+avg_reward_EXE -1.2071621417999268
+Update step 24 completed
+Saving checkpoint 24
+[2026-06-28 00:30:17,090][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 48
+Starting Update step 25/32
+Update step: 24
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM 0.009378373622894287
+avg_reward_EXE -1.2184085845947266
+Update step 25 completed
+Saving checkpoint 25
+[2026-06-28 00:30:25,133][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 50
+Starting Update step 26/32
+Update step: 25
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM 0.009404747746884823
+avg_reward_EXE -1.1346359252929688
+Update step 26 completed
+Saving checkpoint 26
+[2026-06-28 00:30:33,176][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 52
+Starting Update step 27/32
+Update step: 26
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM 0.012085825204849243
+avg_reward_EXE -1.3362427949905396
+Update step 27 completed
+Saving checkpoint 27
+[2026-06-28 00:30:41,260][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 54
+Starting Update step 28/32
+Update step: 27
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM 0.005995207466185093
+avg_reward_EXE -1.3327776193618774
+Update step 28 completed
+Saving checkpoint 28
+[2026-06-28 00:30:49,261][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 56
+Starting Update step 29/32
+Update step: 28
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM 0.01092120073735714
+avg_reward_EXE -1.4326223134994507
+Update step 29 completed
+Saving checkpoint 29
+[2026-06-28 00:30:57,347][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 58
+Starting Update step 30/32
+Update step: 29
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM 0.00937250442802906
+avg_reward_EXE -1.0037471055984497
+Update step 30 completed
+Saving checkpoint 30
+[2026-06-28 00:31:05,314][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 60
+Starting Update step 31/32
+Update step: 30
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM 0.009897714480757713
+avg_reward_EXE -1.2701114416122437
+Update step 31 completed
+Saving checkpoint 31
+[2026-06-28 00:31:13,235][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 62
+Starting Update step 32/32
+Update step: 31
+Action shape is  (64, 256)
+Action shape is  (64, 256)
+avg_reward_MM 0.009794038720428944
+avg_reward_EXE -1.2960575819015503
+Update step 32 completed
+Saving checkpoint 32
+[2026-06-28 00:31:21,200][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 64
+Total steps: 524288
+Elapsed time: 319.4791851043701 seconds
+Steps per second: 1641.070919311132
+Agents per type: [1, 1]
+Num data messages: None
+Num envs: 256
+Finished: 2026-06-28T00:31:24+02:00
