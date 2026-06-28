@@ -26,7 +26,7 @@ import flax.linen as nn
 import numpy as np
 import optax
 from flax.linen.initializers import constant, orthogonal # type: ignore
-from typing import Sequence, NamedTuple, Any, Dict
+from typing import Sequence, NamedTuple, Any, Dict, Optional
 from flax.training.train_state import TrainState
 from flax.training import orbax_utils
 import distrax
@@ -417,12 +417,16 @@ def batchify(x: jnp.ndarray, num_actors):
 def unbatchify(x: jnp.ndarray,num_envs, num_agents):
     return  x.reshape((num_envs, num_agents, -1))
 
-def create_agent_configs(config,override_str:str = "BASELINE_CONFIGS") -> Dict[str, Any]:
+def create_agent_configs(
+    config,
+    override_str: str = "BASELINE_CONFIGS",
+    override_by_agent: Optional[Dict[str, str]] = None,
+) -> Dict[str, Any]:
     """
     Create agent configs with three layers of precedence (lowest to highest):
     1. Default attributes from the EnvironmentConfig classes
     2. Values from the JSON config
-    3. Sweep parameters from BASELINE_CONFIGS
+    3. Sweep parameters from BASELINE_CONFIGS or AGENT_CONFIGS
     
     Args:
         config: The full config dict containing both JSON config and sweep parameters
@@ -433,30 +437,28 @@ def create_agent_configs(config,override_str:str = "BASELINE_CONFIGS") -> Dict[s
         Dict of agent configs keyed by agent type name
     """
     agent_configs = {}
-    if override_str in config:
-        for agent_type, agent_cfg in config[override_str].items():
-            # Start with defaults from the config class
-            agent_config_class = CONFIG_OBJECT_DICT[agent_type]
-            
-            # First apply config values (from JSON) to override defaults
-            config_overrides = {}
-            field_names = {f.name for f in fields(agent_config_class)}
-            for key, value in config["dict_of_agents_configs"].items():
-                if  isinstance(value, dict) and key == agent_type:
-                    for key, value in value.items():
-                        if key in field_names:
-                            config_overrides[key] = value
-            
-            # Then apply sweep parameters which take highest precedence
-            sweep_overrides = {k.lower(): v for k, v in agent_cfg.items()}
-            
-            # Merge: sweep_overrides will override config_overrides
-            all_overrides = {**config_overrides, **sweep_overrides}
-            
-            # Create the agent config with all overrides
-            agent_configs[agent_type] = agent_config_class(**all_overrides)
-    
-    
+    if override_by_agent is None:
+        if override_str not in config:
+            return agent_configs
+        override_by_agent = {agent_type: override_str for agent_type in config[override_str]}
+
+    for agent_type, agent_override_str in override_by_agent.items():
+        agent_config_class = CONFIG_OBJECT_DICT[agent_type]
+
+        config_overrides = {}
+        field_names = {f.name for f in fields(agent_config_class)}
+        for key, value in config["dict_of_agents_configs"].items():
+            if isinstance(value, dict) and key == agent_type:
+                for key, value in value.items():
+                    if key in field_names:
+                        config_overrides[key] = value
+
+        agent_cfg = config.get(agent_override_str, {}).get(agent_type, {})
+        sweep_overrides = {k.lower(): v for k, v in agent_cfg.items()}
+
+        all_overrides = {**config_overrides, **sweep_overrides}
+        agent_configs[agent_type] = agent_config_class(**all_overrides)
+
     return agent_configs
 
 
@@ -557,11 +559,23 @@ def make_sim(config):
                     }
             }
             orbax_checkpointer = oxcp.PyTreeCheckpointer()
-            checkpoint_manager = oxcp.CheckpointManager(
-             f'/home/myuser/data/checkpoints/MARLCheckpoints/{config["RESTORE_PROJECT"]}/{config["RESTORE_RUN"]}', orbax_checkpointer
-                )
+            checkpoint_dir = os.path.join(
+                config["world_config"]["alphatradePath"],
+                "checkpoints",
+                "MARLCheckpoints",
+                config["RESTORE_PROJECT"],
+                config["RESTORE_RUN"],
+            )
+            checkpoint_manager = oxcp.CheckpointManager(checkpoint_dir, orbax_checkpointer)
             if step is None:
-                step=checkpoint_manager.latest_step()
+                configured_step = config.get("RESTORE_STEP")
+                if configured_step is None or str(configured_step).lower() in {"", "none", "latest"}:
+                    step = checkpoint_manager.latest_step()
+                else:
+                    step = int(configured_step)
+            if step is None:
+                raise ValueError(f"No checkpoint step found in {checkpoint_dir}")
+            print(f"Restoring checkpoint from {checkpoint_dir} at step {step}")
 
             restored_state = checkpoint_manager.restore(
                 step,
@@ -622,6 +636,7 @@ def make_sim(config):
 
 
         def callback(metric, combo_desc=None):
+            combo_prefix = combo_desc or "default"
             action_distribution = {}
             episodes_complete =[]
             for i, tr in enumerate(metric["traj_batch"]):
@@ -630,19 +645,60 @@ def make_sim(config):
                 tot_counts=sum(counts)
                 # Add each action count to the dictionary with a unique key
                 for a, c in zip(unique_actions, counts):
-                    action_distribution[f"action_{i}_{int(a)}"] = c/tot_counts*100
+                    action_distribution[f"{combo_prefix}/action_{i}_{int(a)}"] = c/tot_counts*100
                 episodes_complete.append(tr.global_done.sum())
             print(f"Completed Episodes from global dones: {episodes_complete}")
 
 
             logging_dict = {
-                    # TODO: Log the quantities of interest. Keep it trivial for now.
                     "env_step": metric["update_steps"]
                     * config["NUM_ENVS"]
                     * config["NUM_STEPS"],
-                    **{f"avg_reward_{i}": metric["avg_reward"][i] for i in range(len(metric["avg_reward"]))},
+                    **{f"{combo_prefix}/avg_reward_{i}": metric["avg_reward"][i] for i in range(len(metric["avg_reward"]))},
                     **action_distribution
                 }
+            def to_np(x):
+                return np.asarray(jax.device_get(x))
+
+            def step_env_array(x):
+                x = np.squeeze(to_np(x))
+                if x.ndim == 0:
+                    return x.reshape(1, 1)
+                if x.ndim == 1:
+                    return x[:, None]
+                if x.ndim > 2:
+                    return x.reshape(x.shape[0], -1)
+                return x
+
+            def add_metric(name, value):
+                logging_dict[f"{combo_prefix}/{name}"] = float(value)
+
+            traj_batch = metric["traj_batch"]
+            if len(traj_batch) >= 2:
+                mm_info = traj_batch[0].info["agent"]
+                exe_info = traj_batch[1].info["agent"]
+
+                if "reward_portfolio_value" in mm_info:
+                    mm_pv = step_env_array(mm_info["reward_portfolio_value"])
+                    add_metric("mm_final_portfolio_value_mean", np.nanmean(mm_pv[-1]))
+                    add_metric("mm_mean_portfolio_value", np.nanmean(mm_pv))
+                if "total_PnL" in mm_info:
+                    mm_total_pnl = step_env_array(mm_info["total_PnL"])
+                    add_metric("mm_final_total_pnl_mean", np.nanmean(mm_total_pnl[-1]))
+                if "inventory" in mm_info:
+                    mm_inventory = step_env_array(mm_info["inventory"])
+                    add_metric("mm_inventory_std", np.nanstd(mm_inventory))
+
+                if "revenue_direction_normalised" in exe_info:
+                    exe_slippage = step_env_array(exe_info["revenue_direction_normalised"])
+                    add_metric("exe_episode_slippage_mean", np.nanmean(np.nansum(exe_slippage, axis=0)))
+                    add_metric("exe_mean_step_slippage", np.nanmean(exe_slippage))
+                if "quant_left" in exe_info:
+                    exe_quant_left = step_env_array(exe_info["quant_left"])
+                    add_metric("exe_final_quant_left_mean", np.nanmean(exe_quant_left[-1]))
+                if "doom_quant" in exe_info:
+                    exe_doom_quant = step_env_array(exe_info["doom_quant"])
+                    add_metric("exe_total_doom_quant_mean", np.nanmean(np.nansum(exe_doom_quant, axis=0)))
             # if config["CALC_EVAL"]:
             #     logging_dict.update({
             #         **{f"avg_eval_reward_{i}": metric["avg_reward_eval"][i] for i in range(len(metric["avg_reward_eval"]))},
@@ -924,10 +980,11 @@ def make_sim(config):
                     print(f"  {agent_type} (Agent type {i}): avg_reward = {eval_metrics['avg_reward'][i]:.4f}")
                     for main_metric in ["reward_portfolio_value","revenue_direction_normalised"]:
                         if main_metric in eval_metrics["traj_batch"][i].info['agent'].keys():
-                            print(f"    {agent_type} (Agent type {i}): PNL = {eval_metrics["traj_batch"][i].info['agent'][main_metric].mean()}")
+                            metric_values = eval_metrics["traj_batch"][i].info["agent"][main_metric]
+                            print(f"    {agent_type} (Agent type {i}): PNL = {metric_values.mean()}")
                             if main_metric == "reward_portfolio_value":
-                                print(f"    {agent_type} (Agent type {i}): Dimensions = {eval_metrics["traj_batch"][i].info['agent'][main_metric].shape}")
-                                print(f"    {agent_type} (Agent type {i}): PNL std = {eval_metrics["traj_batch"][i].info['agent'][main_metric][63::64,:].mean()}")
+                                print(f"    {agent_type} (Agent type {i}): Dimensions = {metric_values.shape}")
+                                print(f"    {agent_type} (Agent type {i}): PNL std = {metric_values[63::64,:].mean()}")
                 # callback(eval_metrics)
                 del eval_metrics
                 gc.collect()
@@ -953,8 +1010,8 @@ def make_sim(config):
     return run
 
 def get_ma_config(config, policy_choice, combo_desc):
-    agent_configs = {}
     print(policy_choice)
+    override_by_agent = {}
     for i, use_learned in enumerate(policy_choice):
         agent_type = list(config["AGENT_CONFIGS"].keys())[i]
         # Start with common agent config
@@ -966,20 +1023,21 @@ def get_ma_config(config, policy_choice, combo_desc):
         else:
             raise ValueError(f"In get_ma_config: \n\t Invalid policy choice {use_learned} for agent type {agent_type}")
         
-        # Convert all keys to lowercase for the environment config
-        agent_configs=create_agent_configs(config,override_str=override_str)
+        override_by_agent[agent_type] = override_str
+
+    agent_configs = create_agent_configs(config, override_by_agent=override_by_agent)
 
     # Print agent configs with decorative formatting to make it stand out
     print("\n" + "="*80)
-    print("🚀 POLICY COMBINATION: " + combo_desc + " 🚀")
+    print("POLICY COMBINATION: " + combo_desc)
     print("="*80)
-    print("📊 AGENT CONFIGURATIONS:")
+    print("AGENT CONFIGURATIONS:")
     for agent_type, config_obj in agent_configs.items():
         print(f"\n{'*'*40}")
-        print(f"🤖 AGENT TYPE: {agent_type}")
+        print(f"AGENT TYPE: {agent_type}")
         print(f"{'*'*40}")
         for param_name, param_value in vars(config_obj).items():
-            print(f"  • {param_name}: {param_value}")
+            print(f"  - {param_name}: {param_value}")
     print("="*80 + "\n")
 
     ma_config = MultiAgentConfig(
@@ -1010,12 +1068,12 @@ def seperate_main(config):
         else:
             print("Using default MultiAgentConfig as defined in jaxob_config.py file.")
             env_config=MultiAgentConfig()
-            save_config_to_file(env_config,f"config/env_configs/default_config_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
+            save_config_to_file(env_config,f"config/env_configs/default_config_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
     except Exception as e:
         print(f"Error loading env config: {e}")
         print("Reverting to default MultiAgentConfig as defined in jaxob_config.py file.")
         env_config=MultiAgentConfig()
-        save_config_to_file(env_config,f"config/env_configs/default_config_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
+        save_config_to_file(env_config,f"config/env_configs/default_config_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
     print("Note: The sweep parameters in yaml will override these settings.")
     env_config=OmegaConf.structured(env_config)
     final_config=OmegaConf.merge(config,env_config)
@@ -1025,11 +1083,27 @@ def seperate_main(config):
     # jax.profiler.start_trace("/tmp/profile-data")
 
     
-    rng = jax.random.PRNGKey(0)
+    run = None
+    try:
+        if config["WANDB_MODE"] != "disabled":
+            run = wandb.init(
+                entity=config["ENTITY"],
+                project=config["PROJECT"],
+                tags=["baseline_eval", "validation"],
+                config=config,
+                mode=config["WANDB_MODE"],
+                allow_val_change=True,
+            )
+            config = dict(wandb.config)
 
-    run_fn = make_sim(config)
-    # print("+++++++++++ Training turned off whilst debugging wandb ++++++++++++")
-    out = run_fn(rng)
+        rng = jax.random.PRNGKey(config["SEED"])
+
+        run_fn = make_sim(config)
+        # print("+++++++++++ Training turned off whilst debugging wandb ++++++++++++")
+        out = run_fn(rng)
+    finally:
+        if run is not None:
+            wandb.finish()
     # out=jax.block_until_ready(out)  # Ensure the computation is complete before proceeding
     # (dummy * dummy).block_until_ready()
     # jax.profiler.stop_trace()
