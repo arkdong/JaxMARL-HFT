@@ -1,0 +1,15 @@
+RUN_ID=h100x4_4096_8388608_val_24275872
+JOB_ID=24275872
+NODE=gcn100.local.snellius.surf.nl
+STARTED=2026-06-28T20:57:22+02:00
+REPO_ROOT=/home/adong/JaxMARL-HFT
+DATA_ROOT=/home/adong/JaxMARL-HFT/data
+CONFIG_DATA_PATH=/gpfs/home4/adong/JaxMARL-HFT/data
+CONFIG_ALPHATRADE_PATH=/gpfs/home4/adong/JaxMARL-HFT
+LOBSTER_DIR=/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/val
+CHECKPOINT_DIR=/gpfs/home4/adong/JaxMARL-HFT/checkpoints/MARLCheckpoints/Thesis/ethereal-sweep-1
+RESTORE_STEP=32
+EXP_FILE=snellius_scripts/experiments/h100x4_4096_8388608_val.env
+CUDA_VISIBLE_DEVICES=0
+SLURM_GPUS=1
+SLURM_CPUS_PER_TASK=64
