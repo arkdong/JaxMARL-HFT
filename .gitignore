@@ -42,7 +42,7 @@ re_2.ipynb
 params_file**
 note.md
 results_file**
-
+checkpoints
 *.png
 *.npy
 *.nfs*
