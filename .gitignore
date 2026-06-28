@@ -42,8 +42,10 @@ re_2.ipynb
 params_file**
 note.md
 results_file**
-checkpoints
-slurm_logs
+checkpoints/
+slurm_logs/**
+
+
 *.png
 *.npy
 *.nfs*
