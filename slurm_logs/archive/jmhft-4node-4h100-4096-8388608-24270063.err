@@ -1,0 +1,159 @@
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from /home/adong/.netrc.
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from /home/adong/.netrc.
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from /home/adong/.netrc.
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from /home/adong/.netrc.
+wandb: Agent Starting Run: 6gkhp04v with config:
+wandb: 	AGENT_CONFIGS: {'Execution': {'reward_lambda': 0.1}, 'MarketMaking': {'inv_penalty': 'none'}}
+wandb: 	SEED: 42
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from /home/adong/.netrc.
+wandb: Agent Starting Run: kpzm6rnl with config:
+wandb: 	AGENT_CONFIGS: {'Execution': {'reward_lambda': 0.1}, 'MarketMaking': {'inv_penalty': 'none'}}
+wandb: 	SEED: 42
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from /home/adong/.netrc.
+wandb: Agent Starting Run: akbq37jn with config:
+wandb: 	AGENT_CONFIGS: {'Execution': {'reward_lambda': 0.1}, 'MarketMaking': {'inv_penalty': 'none'}}
+wandb: 	SEED: 42
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from /home/adong/.netrc.
+wandb: Currently logged in as: ark-dong (ark-dong-university-of-amsterdam) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: WARNING Ignoring project 'Thesis' when running a sweep.
+wandb: WARNING Ignoring entity 'ark-dong-university-of-amsterdam' when running a sweep.
+wandb: Currently logged in as: ark-dong (ark-dong-university-of-amsterdam) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: WARNING Ignoring project 'Thesis' when running a sweep.
+wandb: WARNING Ignoring entity 'ark-dong-university-of-amsterdam' when running a sweep.
+wandb: Currently logged in as: ark-dong (ark-dong-university-of-amsterdam) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: WARNING Ignoring project 'Thesis' when running a sweep.
+wandb: WARNING Ignoring entity 'ark-dong-university-of-amsterdam' when running a sweep.
+wandb: WARNING config_exclude_keys is deprecated. Use `config=wandb.helper.parse_config(config_object, exclude=('key',))` instead.
+wandb: WARNING config_exclude_keys is deprecated. Use `config=wandb.helper.parse_config(config_object, exclude=('key',))` instead.
+wandb: WARNING config_exclude_keys is deprecated. Use `config=wandb.helper.parse_config(config_object, exclude=('key',))` instead.
+wandb: Tracking run with wandb version 0.28.0
+wandb: Run data is saved locally in /gpfs/home4/adong/JaxMARL-HFT/wandb/run-20260628_153918-6gkhp04v
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run smart-sweep-1
+wandb: ⭐️ View project at https://wandb.ai/ark-dong-university-of-amsterdam/Thesis
+wandb: 🧹 View sweep at https://wandb.ai/ark-dong-university-of-amsterdam/Thesis/sweeps/5968ug35
+wandb: 🚀 View run at https://wandb.ai/ark-dong-university-of-amsterdam/Thesis/runs/6gkhp04v
+wandb: Tracking run with wandb version 0.28.0
+wandb: Run data is saved locally in /gpfs/home4/adong/JaxMARL-HFT/wandb/run-20260628_153918-akbq37jn
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run classic-sweep-1
+wandb: ⭐️ View project at https://wandb.ai/ark-dong-university-of-amsterdam/Thesis
+wandb: 🧹 View sweep at https://wandb.ai/ark-dong-university-of-amsterdam/Thesis/sweeps/zhs9g51p
+wandb: 🚀 View run at https://wandb.ai/ark-dong-university-of-amsterdam/Thesis/runs/akbq37jn
+wandb: Tracking run with wandb version 0.28.0
+wandb: Run data is saved locally in /gpfs/home4/adong/JaxMARL-HFT/wandb/run-20260628_153918-kpzm6rnl
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run fast-sweep-1
+wandb: ⭐️ View project at https://wandb.ai/ark-dong-university-of-amsterdam/Thesis
+wandb: 🧹 View sweep at https://wandb.ai/ark-dong-university-of-amsterdam/Thesis/sweeps/k4lr7cvw
+wandb: 🚀 View run at https://wandb.ai/ark-dong-university-of-amsterdam/Thesis/runs/kpzm6rnl
+wandb: Sweep Agent: Waiting for job.
+wandb: updating run metadata
+wandb: uploading output.log; uploading wandb-summary.json; uploading config.yaml
+wandb: uploading history steps 62-64, summary, console lines 300-313
+wandb: 
+wandb: Run history:
+wandb:  agent_EXE/action_0 ▁▂▃▅▆▇██▇▆▅▅▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▅▅
+wandb:  agent_EXE/action_1 █▇▅▄▄▃▃▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: agent_EXE/action_10 █▇▅▄▃▃▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: agent_EXE/action_11 ▅▆▅▄▂▂▁▁▂▃▄▃▄▄▄▅▆▇▆▇▇▇▇▇█▇█▇▇▇▇▇
+wandb: agent_EXE/action_12 ▁▁▂▂▃▃▄▄▅▅▆▆▇▇▇▇▇▇█▇▇▇██████████
+wandb:  agent_EXE/action_2 ▇██▇▆▅▄▃▃▂▂▂▂▂▂▂▂▂▁▂▂▁▁▁▁▁▁▁▁▁▁▁
+wandb:  agent_EXE/action_3 ▄▅▇▇████▇▅▅▅▅▄▃▃▃▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁
+wandb:  agent_EXE/action_4 ▁▂▃▄▅▆▇███▇▆▆▆▇▆▆▆▇▇▇▇▇▆▆▇▆▇▇▇▇▇
+wandb:  agent_EXE/action_5 █▇▅▄▃▃▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  agent_EXE/action_6 ██▇▆▅▄▃▂▃▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:                +124 ...
+wandb: 
+wandb: Run summary:
+wandb:  agent_EXE/action_0 10.46829
+wandb:  agent_EXE/action_1 1.49803
+wandb: agent_EXE/action_10 1.70746
+wandb: agent_EXE/action_11 8.20007
+wandb: agent_EXE/action_12 31.07491
+wandb:  agent_EXE/action_2 2.86598
+wandb:  agent_EXE/action_3 5.81398
+wandb:  agent_EXE/action_4 12.7594
+wandb:  agent_EXE/action_5 1.39084
+wandb:  agent_EXE/action_6 2.06146
+wandb:                +125 ...
+wandb: 
+wandb: 🚀 View run classic-sweep-1 at: https://wandb.ai/ark-dong-university-of-amsterdam/Thesis/runs/akbq37jn
+wandb: ⭐️ View project at: https://wandb.ai/ark-dong-university-of-amsterdam/Thesis
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260628_153918-akbq37jn/logs
+wandb: updating run metadata
+wandb: uploading output.log; uploading wandb-summary.json; uploading config.yaml
+wandb: uploading history steps 62-64, summary, console lines 300-313
+wandb: 
+wandb: Run history:
+wandb:  agent_EXE/action_0 ▁▂▃▅▆▇██▇▆▅▅▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▅▅
+wandb:  agent_EXE/action_1 █▇▅▄▄▃▃▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: agent_EXE/action_10 █▇▅▄▃▃▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: agent_EXE/action_11 ▅▆▅▄▂▂▁▁▂▃▄▃▄▄▄▅▆▇▆▇▇▇▇▇█▇█▇▇▇▇▇
+wandb: agent_EXE/action_12 ▁▁▂▂▃▃▄▄▅▅▆▆▇▇▇▇▇▇█▇▇▇██████████
+wandb:  agent_EXE/action_2 ▇██▇▆▅▄▃▃▂▂▂▂▂▂▂▂▂▁▂▂▁▁▁▁▁▁▁▁▁▁▁
+wandb:  agent_EXE/action_3 ▄▅▇▇████▇▅▅▅▅▄▃▃▃▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁
+wandb:  agent_EXE/action_4 ▁▂▃▄▅▆▇███▇▆▆▆▇▆▆▆▇▇▇▇▇▆▆▇▆▇▇▇▇▇
+wandb:  agent_EXE/action_5 █▇▅▄▃▃▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  agent_EXE/action_6 ██▇▆▅▄▃▂▃▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:                +124 ...
+wandb: 
+wandb: Run summary:
+wandb:  agent_EXE/action_0 10.46829
+wandb:  agent_EXE/action_1 1.49803
+wandb: agent_EXE/action_10 1.70746
+wandb: agent_EXE/action_11 8.20007
+wandb: agent_EXE/action_12 31.07491
+wandb:  agent_EXE/action_2 2.86598
+wandb:  agent_EXE/action_3 5.81398
+wandb:  agent_EXE/action_4 12.7594
+wandb:  agent_EXE/action_5 1.39084
+wandb:  agent_EXE/action_6 2.06146
+wandb:                +125 ...
+wandb: 
+wandb: 🚀 View run fast-sweep-1 at: https://wandb.ai/ark-dong-university-of-amsterdam/Thesis/runs/kpzm6rnl
+wandb: ⭐️ View project at: https://wandb.ai/ark-dong-university-of-amsterdam/Thesis
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260628_153918-kpzm6rnl/logs
+wandb: updating run metadata
+wandb: uploading output.log; uploading wandb-summary.json; uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:  agent_EXE/action_0 ▁▂▃▅▆▇██▇▆▅▅▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▅▅
+wandb:  agent_EXE/action_1 █▇▅▄▄▃▃▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: agent_EXE/action_10 █▇▅▄▃▃▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: agent_EXE/action_11 ▅▆▅▄▂▂▁▁▂▃▄▃▄▄▄▅▆▇▆▇▇▇▇▇█▇█▇▇▇▇▇
+wandb: agent_EXE/action_12 ▁▁▂▂▃▃▄▄▅▅▆▆▇▇▇▇▇▇█▇▇▇██████████
+wandb:  agent_EXE/action_2 ▇██▇▆▅▄▃▃▂▂▂▂▂▂▂▂▂▁▂▂▁▁▁▁▁▁▁▁▁▁▁
+wandb:  agent_EXE/action_3 ▄▅▇▇████▇▅▅▅▅▄▃▃▃▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁
+wandb:  agent_EXE/action_4 ▁▂▃▄▅▆▇███▇▆▆▆▇▆▆▆▇▇▇▇▇▆▆▇▆▇▇▇▇▇
+wandb:  agent_EXE/action_5 █▇▅▄▃▃▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  agent_EXE/action_6 ██▇▆▅▄▃▂▃▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:                +124 ...
+wandb: 
+wandb: Run summary:
+wandb:  agent_EXE/action_0 10.46829
+wandb:  agent_EXE/action_1 1.49803
+wandb: agent_EXE/action_10 1.70746
+wandb: agent_EXE/action_11 8.20007
+wandb: agent_EXE/action_12 31.07491
+wandb:  agent_EXE/action_2 2.86598
+wandb:  agent_EXE/action_3 5.81398
+wandb:  agent_EXE/action_4 12.7594
+wandb:  agent_EXE/action_5 1.39084
+wandb:  agent_EXE/action_6 2.06146
+wandb:                +125 ...
+wandb: 
+wandb: 🚀 View run smart-sweep-1 at: https://wandb.ai/ark-dong-university-of-amsterdam/Thesis/runs/6gkhp04v
+wandb: ⭐️ View project at: https://wandb.ai/ark-dong-university-of-amsterdam/Thesis
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260628_153918-6gkhp04v/logs
+wandb: Sweep Agent: Waiting for job.
+wandb: Sweep Agent: Waiting for job.
+wandb: Sweep Agent: Waiting for job.
+wandb: Sweep Agent: Exiting.
+wandb: Sweep Agent: Exiting.
+wandb: Sweep Agent: Exiting.
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+[2026-06-28T16:00:13.159] error: *** JOB 24270063 ON gcn108 CANCELLED AT 2026-06-28T16:00:13 DUE to SIGNAL Terminated ***
