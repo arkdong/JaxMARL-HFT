@@ -43,6 +43,7 @@ params_file**
 note.md
 results_file**
 checkpoints
+slurm_logs
 *.png
 *.npy
 *.nfs*

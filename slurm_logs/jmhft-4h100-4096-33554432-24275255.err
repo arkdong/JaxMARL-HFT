@@ -162,3 +162,38 @@ W0628 20:16:34.202627  847928 spmd_partitioner.cc:656] [SPMD] Involuntary full r
 W0628 20:16:34.202638  847928 spmd_partitioner.cc:656] [SPMD] Involuntary full rematerialization. The compiler cannot go from sharding {devices=[1,4]<=[4]} to {maximal device=0} efficiently for HLO operation %get-tuple-element = s32[64,1024]{1,0} get-tuple-element(%while), index=112, sharding={devices=[1,4]<=[4]}, metadata={op_name="jit(_update_step)/while" stack_frame_id=5}. As the last resort, SPMD will replicate the tensor and then partition it to obtain the target sharding, which is inefficient. This issue will be fixed by Shardy partitioner in the future, which is tracked in b/433785288. Contact Shardy or XLA team for help.
 W0628 20:16:34.202649  847928 spmd_partitioner.cc:656] [SPMD] Involuntary full rematerialization. The compiler cannot go from sharding {devices=[1,4,1]<=[4]} to {maximal device=0} efficiently for HLO operation %get-tuple-element = s32[64,1024,2]{2,1,0} get-tuple-element(%while), index=113, sharding={devices=[1,4,1]<=[4]}, metadata={op_name="jit(_update_step)/while" stack_frame_id=5}. As the last resort, SPMD will replicate the tensor and then partition it to obtain the target sharding, which is inefficient. This issue will be fixed by Shardy partitioner in the future, which is tracked in b/433785288. Contact Shardy or XLA team for help.
 W0628 20:16:34.202661  847928 spmd_partitioner.cc:656] [SPMD] Involuntary full rematerialization. The compiler cannot go from sharding {devices=[1,4]<=[4]} to {maximal device=0} efficiently for HLO operation %get-tuple-element = s32[64,1024]{1,0} get-tuple-element(%while), index=114, sharding={devices=[1,4]<=[4]}, metadata={op_name="jit(_update_step)/while" stack_frame_id=5}. As the last resort, SPMD will replicate the tensor and then partition it to obtain the target sharding, which is inefficient. This issue will be fixed by Shardy partitioner in the future, which is tracked in b/433785288. Contact Shardy or XLA team for help.
+wandb: updating run metadata
+wandb: uploading output.log
+wandb: 
+wandb: Run history:
+wandb:  agent_EXE/action_0 ▂▄▆██▅▄▅▆██▆▇▇▆▅▆▅▅▄▄▃▃▂▂▃▂▂▂▂▁▁▁▁▁▁▁▁▁▁
+wandb:  agent_EXE/action_1 █▅▄▃▃▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: agent_EXE/action_10 █▇▅▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▁▁▁▁▁▁▁
+wandb: agent_EXE/action_11 ▁▂▁▁▂▅▆▆▆▆▅▅▄▄▄▄▅▅▆▆▆▆▆▆▇▇█▇████████████
+wandb: agent_EXE/action_12 ▁▁▂▃▃▃▄▄▄▄▄▅▅▅▅▆▆▆▆▆▆▆▇▇▇▇██████████████
+wandb:  agent_EXE/action_2 █▄▃▃▃▃▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  agent_EXE/action_3 ▅▇██▆▃▂▂▂▁▁▁▁▁▁▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  agent_EXE/action_4 ▁▃▄▅▅▇▆▆▇███▇█▆▅▅▅▅▅▄▃▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂
+wandb:  agent_EXE/action_5 █▆▃▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂
+wandb:  agent_EXE/action_6 █▆▅▄▄▃▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:                +124 ...
+wandb: 
+wandb: Run summary:
+wandb:  agent_EXE/action_0 9.12285
+wandb:  agent_EXE/action_1 1.63345
+wandb: agent_EXE/action_10 1.63536
+wandb: agent_EXE/action_11 12.93335
+wandb: agent_EXE/action_12 36.7588
+wandb:  agent_EXE/action_2 2.33154
+wandb:  agent_EXE/action_3 5.31845
+wandb:  agent_EXE/action_4 8.51746
+wandb:  agent_EXE/action_5 1.52512
+wandb:  agent_EXE/action_6 2.02217
+wandb:                +125 ...
+wandb: 
+wandb: 🚀 View run olive-sweep-1 at: https://wandb.ai/ark-dong-university-of-amsterdam/pilot/runs/39hd2q2c
+wandb: ⭐️ View project at: https://wandb.ai/ark-dong-university-of-amsterdam/pilot
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260628_201524-39hd2q2c/logs
+wandb: Sweep Agent: Waiting for job.
+wandb: Sweep Agent: Exiting.

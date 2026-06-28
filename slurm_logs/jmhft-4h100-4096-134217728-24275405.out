@@ -1005,3 +1005,30 @@ Update step 99 completed
 Saving checkpoint 99
 [2026-06-28 20:48:52,412][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 198
 Starting Update step 100/512
+Update step: 99
+Action shape is  (64, 4096)
+Action shape is  (64, 4096)
+avg_reward_EXE -0.7332983016967773
+avg_reward_MM 0.012952158227562904
+Update step 100 completed
+Saving checkpoint 100
+[2026-06-28 20:49:07,793][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 200
+Starting Update step 101/512
+Update step: 100
+Action shape is  (64, 4096)
+Action shape is  (64, 4096)
+avg_reward_EXE -0.801544189453125
+avg_reward_MM 0.01343850139528513
+Update step 101 completed
+Saving checkpoint 101
+[2026-06-28 20:49:23,043][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 202
+Starting Update step 102/512
+Update step: 101
+Action shape is  (64, 4096)
+Action shape is  (64, 4096)
+avg_reward_EXE -0.8201354742050171
+avg_reward_MM 0.013748799450695515
+Update step 102 completed
+Saving checkpoint 102
+[2026-06-28 20:49:38,050][root][INFO] - [process=0] Created OpTracker for checkpoint_manager_save with operation id 204
+Starting Update step 103/512
