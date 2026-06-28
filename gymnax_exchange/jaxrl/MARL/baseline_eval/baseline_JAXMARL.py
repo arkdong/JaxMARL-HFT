@@ -555,7 +555,6 @@ def make_sim(config):
                 # 'config': {} ,
                 'metrics': {
                     'train_rewards': [np.nan,np.nan],
-                    'eval_rewards': [np.nan,np.nan],
                     }
             }
             orbax_checkpointer = oxcp.PyTreeCheckpointer()
