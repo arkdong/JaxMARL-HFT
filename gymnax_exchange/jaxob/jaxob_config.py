@@ -27,7 +27,7 @@ class JAXLOB_Configuration:
     alphatradePath: str = os.path.expanduser("~")
     dataPath: str = os.path.expanduser("~")+"/data"
     stock: str = "AMZN"
-    timePeriod: str = "2024_Dec" # Needs to be the appropriate directory name. 
+    timePeriod: str = "2024_Dec" # Needs to be the appropriate directory name.
 
 
 @dataclass(frozen=True)
@@ -48,12 +48,12 @@ class MarketMaking_EnvironmentConfig():
     tenth_action: str = "MarketOrder"
     bob_v0: int = 1
 
-    
+
     # Real Parameters
     action_space: str = "bobRL"    # action_space options: "fixed_prices", "fixed_quants", "AvSt", "spread_skew", "directional_trading", "simple"
     observation_space: str = "engineered"    # observation_space options: "engineered", "messages", "messages_new_tokenizer", "basic"
-    reward_function: str = "spooner_asym_damped2"  # options: "zero_inv", "pnl", "buy_sell_pnl", "complex", "portfolio_value", "portfolio_value_scaled", "spooner", "spooner_damped", "spooner_scaled", "delta_netWorth","weight_pnl_inventory_pnl"    
-    
+    reward_function: str = "spooner_asym_damped2"  # options: "zero_inv", "pnl", "buy_sell_pnl", "complex", "portfolio_value", "portfolio_value_scaled", "spooner", "spooner_damped", "spooner_scaled", "delta_netWorth","weight_pnl_inventory_pnl"
+
     #       Values for action space
     spread_multiplier: float = 3.0 #50.0
     skew_multiplier: float = 5.0 #100.0
@@ -71,10 +71,14 @@ class MarketMaking_EnvironmentConfig():
     inv_penalty_lambda: float = 1.0
     inv_penalty_quadratic_factor: float = 50.0 #Represents N for penalty = 1/N * (inv ** 2) if quadratic penalty is used
     inv_penalty_threshold : float = 10.0 #Threshold for threshold based inventory penalty
-    multiplier_type: str = "tick" # options:  "tick" #DO NOT USE "spread" it is WRONG. 
+    multiplier_type: str = "tick" # options:  "tick" #DO NOT USE "spread" it is WRONG.
     reward_scaling_quo: float = 1.0
     inventoryPnL_eta: float = 0.6
     inventoryPnL_gamma: float = 0.5
+
+    ############################## THESIS ##############################
+    rho_mm: float = 0.0  # direct thesis coefficient: r = r_base - rho_mm * Q^2
+    ############################## THESIS ##############################
 
     rebate_bps: float = 10.0  # rebate in bps applied to the trade value for limit order fills (only passive fills)
 
@@ -166,8 +170,8 @@ class Execution_EnvironmentConfig():
 
     #Not functional.. yet
     time_delay_obs_act:int=0
-    
-    #Set Automatically in Post Init based on action space. 
+
+    #Set Automatically in Post Init based on action space.
     n_actions:int=5 # will be set automatically in the post init function
     num_messages_by_agent:int=8 # will be set automatically in the post init function
     num_action_messages_by_agent:int=4 # will be set automatically in the post init function
