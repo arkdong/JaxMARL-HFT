@@ -11,7 +11,7 @@ import zlib
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Iterable, Sequence
+from typing import Any, Iterable, Sequence, Union
 
 import numpy as np
 import pandas as pd
@@ -218,7 +218,7 @@ def select_split_files(
     return selected
 
 
-BaselineInput = Path | LobsterDayFiles
+BaselineInput = Union[Path, LobsterDayFiles]
 
 
 def input_date(item: BaselineInput) -> str | None:

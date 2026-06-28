@@ -1,8 +1,8 @@
 - ENV_CONFIG=config/env_configs/2_player_fq_fqc.json
 - EvalTimePeriod=val
-- RESTORE_PROJECT=Thesis
-- RESTORE_RUN=ethereal-sweep-1
-- RESTORE_STEP=32
+- RESTORE_PROJECT=medium
+- RESTORE_RUN=toasty-sweep-1
+- RESTORE_STEP=512
 - NUM_ENVS=4096
 - NUM_STEPS=64
 - NUM_UPDATES=32

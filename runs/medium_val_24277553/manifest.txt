@@ -1,0 +1,16 @@
+RUN_ID=medium_val_24277553
+JOB_ID=24277553
+NODE=gcn160.local.snellius.surf.nl
+STARTED=2026-06-28T23:00:30+02:00
+REPO_ROOT=/home/adong/JaxMARL-HFT
+DATA_ROOT=/home/adong/JaxMARL-HFT/data
+CONFIG_DATA_PATH=/gpfs/home4/adong/JaxMARL-HFT/data
+CONFIG_ALPHATRADE_PATH=/gpfs/home4/adong/JaxMARL-HFT
+LOBSTER_DIR=/gpfs/home4/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/val
+CHECKPOINT_DIR=/gpfs/home4/adong/JaxMARL-HFT/checkpoints/MARLCheckpoints/medium/toasty-sweep-1
+RESTORE_STEP=512
+EXP_FILE=snellius_scripts/experiments/medium_val.env
+CUDA_VISIBLE_DEVICES=0
+SLURM_GPUS=1
+SLURM_CPUS_PER_TASK=64
+Finished: 2026-06-28T23:03:05+02:00

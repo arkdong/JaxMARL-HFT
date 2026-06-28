@@ -221,7 +221,7 @@ def normalize_mbo_df(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-@dataclass(slots=True)
+@dataclass
 class Order:
     side: str
     price_int: int
@@ -502,7 +502,7 @@ def interval_trade_extrema(
     return out
 
 
-@dataclass(slots=True)
+@dataclass
 class PriceVolumeCurve:
     """Sorted per-interval trade volume curve for one aggressor side."""
 
@@ -543,7 +543,7 @@ class PriceVolumeCurve:
 EMPTY_PRICE_VOLUME = PriceVolumeCurve.empty()
 
 
-@dataclass(slots=True)
+@dataclass
 class IntervalTradeFlow:
     """Opposite-side trade volume curves aligned to the decision grid."""
 
@@ -609,7 +609,7 @@ def build_interval_trade_flow(
     return IntervalTradeFlow(buy=buy, sell=sell)
 
 
-@dataclass(slots=True)
+@dataclass
 class ArrivalCalibration:
     A_ask: float
     k_ask: float
@@ -856,7 +856,7 @@ def calibrate_queue_arrival_rates(
     return ArrivalCalibration(A_ask, k_ask, A_bid, k_bid, deltas, lambda_ask, lambda_bid, diagnostics)
 
 
-@dataclass(slots=True)
+@dataclass
 class ASParams:
     gamma: float
     sigma: float

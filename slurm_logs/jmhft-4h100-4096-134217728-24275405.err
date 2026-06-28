@@ -162,3 +162,39 @@ W0628 20:23:38.723357 4141958 spmd_partitioner.cc:656] [SPMD] Involuntary full r
 W0628 20:23:38.723368 4141958 spmd_partitioner.cc:656] [SPMD] Involuntary full rematerialization. The compiler cannot go from sharding {devices=[1,4]<=[4]} to {maximal device=0} efficiently for HLO operation %get-tuple-element = s32[64,1024]{1,0} get-tuple-element(%while), index=112, sharding={devices=[1,4]<=[4]}, metadata={op_name="jit(_update_step)/while" stack_frame_id=5}. As the last resort, SPMD will replicate the tensor and then partition it to obtain the target sharding, which is inefficient. This issue will be fixed by Shardy partitioner in the future, which is tracked in b/433785288. Contact Shardy or XLA team for help.
 W0628 20:23:38.723380 4141958 spmd_partitioner.cc:656] [SPMD] Involuntary full rematerialization. The compiler cannot go from sharding {devices=[1,4,1]<=[4]} to {maximal device=0} efficiently for HLO operation %get-tuple-element = s32[64,1024,2]{2,1,0} get-tuple-element(%while), index=113, sharding={devices=[1,4,1]<=[4]}, metadata={op_name="jit(_update_step)/while" stack_frame_id=5}. As the last resort, SPMD will replicate the tensor and then partition it to obtain the target sharding, which is inefficient. This issue will be fixed by Shardy partitioner in the future, which is tracked in b/433785288. Contact Shardy or XLA team for help.
 W0628 20:23:38.723392 4141958 spmd_partitioner.cc:656] [SPMD] Involuntary full rematerialization. The compiler cannot go from sharding {devices=[1,4]<=[4]} to {maximal device=0} efficiently for HLO operation %get-tuple-element = s32[64,1024]{1,0} get-tuple-element(%while), index=114, sharding={devices=[1,4]<=[4]}, metadata={op_name="jit(_update_step)/while" stack_frame_id=5}. As the last resort, SPMD will replicate the tensor and then partition it to obtain the target sharding, which is inefficient. This issue will be fixed by Shardy partitioner in the future, which is tracked in b/433785288. Contact Shardy or XLA team for help.
+wandb: updating run metadata
+wandb: uploading output.log; uploading wandb-summary.json; uploading config.yaml
+wandb: uploading history steps 1022-1024, summary, console lines 4622-4635
+wandb: 
+wandb: Run history:
+wandb:  agent_EXE/action_0 ▇▇█▇▇▆▄▄▃▃▃▃▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  agent_EXE/action_1 █▆▁▁▁▁▁▁▁▁▂▂▁▂▂▂▂▂▃▃▃▃▃▃▃▃▃▃▃▃▃▃▄▃▃▄▃▃▃▄
+wandb: agent_EXE/action_10 █▇▄▃▁▁▁▂▁▂▂▂▂▂▂▂▃▂▃▃▄▄▄▄▄▄▅▅▅▄▅▅▅▅▄▅▅▅▅▆
+wandb: agent_EXE/action_11 ▁▂▂▂▂▂▁▁▁▂▁▁▁▁▁▁▂▃▄▅▅▄▅▅▅▆▆▅▆▆▇▆▆▆▇▇▇▇██
+wandb: agent_EXE/action_12 ▁▂▂▁▂▄▄▅▅▅▇██▇▇▇▇▆▇▆▇▇▇▇▆▇▇▇▇▇▆▆▆▆▆▆▆▆▆▅
+wandb:  agent_EXE/action_2 █▂▁▁▁▁▁▁▂▁▁▁▁▃▄▃▃▃▃▄▃▄▄▄▃▃▄▄▃▄▄▄▄▄▄▄▄▃▄▄
+wandb:  agent_EXE/action_3 █▄▄▃▃▃▃▄▃▄▂▂▂▂▂▂▂▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  agent_EXE/action_4 ▅▆▇██▇▇▅▅▅▄▄▃▃▃▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  agent_EXE/action_5 █▅▃▂▁▁▁▁▁▂▂▂▂▂▃▃▄▃▃▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▅▅▄▄▅
+wandb:  agent_EXE/action_6 █▇▄▂▂▁▂▂▂▂▂▃▄▄▅▆▅▅▆▆▆▆▇▇▆▇▇▇▇▇▇▇▇▇▇▇▇█▇▇
+wandb:                +124 ...
+wandb: 
+wandb: Run summary:
+wandb:  agent_EXE/action_0 3.12881
+wandb:  agent_EXE/action_1 2.48375
+wandb: agent_EXE/action_10 2.47383
+wandb: agent_EXE/action_11 23.44856
+wandb: agent_EXE/action_12 41.53137
+wandb:  agent_EXE/action_2 2.77634
+wandb:  agent_EXE/action_3 3.5656
+wandb:  agent_EXE/action_4 3.6087
+wandb:  agent_EXE/action_5 2.33765
+wandb:  agent_EXE/action_6 2.6947
+wandb:                +125 ...
+wandb: 
+wandb: 🚀 View run toasty-sweep-1 at: https://wandb.ai/ark-dong-university-of-amsterdam/medium/runs/cohrb5yt
+wandb: ⭐️ View project at: https://wandb.ai/ark-dong-university-of-amsterdam/medium
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260628_202231-cohrb5yt/logs
+wandb: Sweep Agent: Waiting for job.
+wandb: Sweep Agent: Exiting.

@@ -21,9 +21,9 @@ ANNEAL_LR: true
 LR: 20
 MAX_GRAD_NORM: 25
 ENV_CONFIG: config/env_configs/2_player_fq_fqc.json
-RESTORE_PROJECT: Thesis
-RESTORE_RUN: ethereal-sweep-1
-RESTORE_STEP: 32
+RESTORE_PROJECT: medium
+RESTORE_RUN: toasty-sweep-1
+RESTORE_STEP: 512
 NUM_UPDATES: 32
 AGENT_CONFIGS:
   MarketMaking: {}

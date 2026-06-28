@@ -115,9 +115,9 @@ hydra:
     task:
     - ENV_CONFIG=config/env_configs/2_player_fq_fqc.json
     - EvalTimePeriod=val
-    - RESTORE_PROJECT=Thesis
-    - RESTORE_RUN=ethereal-sweep-1
-    - RESTORE_STEP=32
+    - RESTORE_PROJECT=medium
+    - RESTORE_RUN=toasty-sweep-1
+    - RESTORE_STEP=512
     - NUM_ENVS=4096
     - NUM_STEPS=64
     - NUM_UPDATES=32
@@ -131,7 +131,7 @@ hydra:
   job:
     name: baseline_JAXMARL
     chdir: null
-    override_dirname: ENTITY=ark-dong-university-of-amsterdam,ENV_CONFIG=config/env_configs/2_player_fq_fqc.json,EvalTimePeriod=val,FC_DIM_SIZE=256,GRU_HIDDEN_DIM=256,NUM_ENVS=4096,NUM_STEPS=64,NUM_UPDATES=32,N_DEVICES=1,PROJECT=Thesis-validation,RESTORE_PROJECT=Thesis,RESTORE_RUN=ethereal-sweep-1,RESTORE_STEP=32,SEED=42,WANDB_MODE=online
+    override_dirname: ENTITY=ark-dong-university-of-amsterdam,ENV_CONFIG=config/env_configs/2_player_fq_fqc.json,EvalTimePeriod=val,FC_DIM_SIZE=256,GRU_HIDDEN_DIM=256,NUM_ENVS=4096,NUM_STEPS=64,NUM_UPDATES=32,N_DEVICES=1,PROJECT=Thesis-validation,RESTORE_PROJECT=medium,RESTORE_RUN=toasty-sweep-1,RESTORE_STEP=512,SEED=42,WANDB_MODE=online
     id: ???
     num: ???
     config_name: 2player_config
