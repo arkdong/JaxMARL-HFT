@@ -11,7 +11,7 @@ FIXED_ACTIONS:
 - - 1
 - - 0
 ENTITY: ark-dong-university-of-amsterdam
-PROJECT: Thesis-validation
+PROJECT: Thesis-rho-star
 WANDB_MODE: online
 CALC_EVAL: false
 EvalTimePeriod: val
@@ -20,11 +20,11 @@ FC_DIM_SIZE: 256
 ANNEAL_LR: true
 LR: 20
 MAX_GRAD_NORM: 25
-ENV_CONFIG: config/env_configs/2_player_fq_fqc.json
-RESTORE_PROJECT: medium
-RESTORE_RUN: toasty-sweep-1
-RESTORE_STEP: 512
-NUM_UPDATES: 32
+ENV_CONFIG: config/env_configs/2_player_mm_risk_neutral.json
+RESTORE_PROJECT: Thesis-mm-risk-neutral
+RESTORE_RUN: colorful-sweep-1
+RESTORE_STEP: 1907
+NUM_UPDATES: 1
 AGENT_CONFIGS:
   MarketMaking: {}
   Execution: {}

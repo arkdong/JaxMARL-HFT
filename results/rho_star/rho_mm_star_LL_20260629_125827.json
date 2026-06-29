@@ -1,0 +1,25 @@
+{
+  "combo": "LL",
+  "denominator_mean_ep_sum_squared_inventory": 15142.0947265625,
+  "env_config": "config/env_configs/2_player_mm_risk_neutral.json",
+  "eval_period": "val",
+  "num_envs": 4096,
+  "num_steps": 64,
+  "numerator_mean_ep_sum_abs_reward_base_mm": 420.4031982421875,
+  "restore_project": "Thesis-mm-risk-neutral",
+  "restore_run": "colorful-sweep-1",
+  "restore_step": 1907,
+  "rho_mm_star_mean_episode_ratio": 0.032800630450376456,
+  "rho_mm_star_median_episode_ratio": 0.029071637089696588,
+  "rho_mm_star_primary": 0.027763873217931306,
+  "rho_mm_star_ratio_of_means": 0.027763873217931306,
+  "seed": 42,
+  "sweep_values": {
+    "rho_0": 0.0,
+    "rho_0p25_star": 0.006940968304482827,
+    "rho_1_star": 0.027763873217931306,
+    "rho_4_star": 0.11105549287172523
+  },
+  "total_episode_count": 4096,
+  "valid_episode_count": 4096
+}
