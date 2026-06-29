@@ -8,7 +8,7 @@ from git import Union
 from humanize import metric
 import pandas as pd
 import csv
-
+import json
 
 # from lobgen.tgci.tgci import train
 os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = "0.8"
@@ -18,7 +18,7 @@ os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "true"
 
 
 import time
-import jax # type: ignorepip 
+import jax # type: ignorepip
 jax.config.update('jax_disable_jit', False)
 
 import jax.numpy as jnp # type: ignore
@@ -79,7 +79,7 @@ class ScannedRNN(nn.Module):
         # Use a dummy key since the default state init fn is just zeros.
         cell = nn.GRUCell(features=hidden_size)
         return cell.initialize_carry(jax.random.PRNGKey(0), (batch_size, hidden_size))
-    
+
 class MultiActionOutputIndependant(nn.Module):
     action_dims: Sequence[int]
     config: Dict
@@ -110,7 +110,7 @@ class MultiActionOutputAutoregressive(nn.Module):
     def get_logits_for_action(self, x, action_idx, prev_actions):
         """
         Compute logits for action_idx conditioned on prev_actions.
-        
+
         Args:
             x: actor features (batch, feature_dim)
             action_idx: which action we're computing logits for (0, 1, 2, ...)
@@ -119,13 +119,13 @@ class MultiActionOutputAutoregressive(nn.Module):
         if action_idx == 0:
             # First action: no conditioning
             logits = nn.Dense(
-                self.action_dims[0], 
-                kernel_init=orthogonal(0.01), 
+                self.action_dims[0],
+                kernel_init=orthogonal(0.01),
                 bias_init=constant(0.0),
                 name=f'action_{action_idx}_head'
             )(x)
             return logits
-        
+
         # Subsequent actions: condition on previous actions
         embeddings = []
         for i, prev_action in enumerate(prev_actions):
@@ -136,10 +136,10 @@ class MultiActionOutputAutoregressive(nn.Module):
                 name=f'action_{i}_embed'
             )(prev_action)
             embeddings.append(embed)
-        
+
         # Concatenate features with all previous action embeddings
         combined = jnp.concatenate([x] + embeddings, axis=-1)
-        
+
         # Process through hidden layer
         hidden = nn.Dense(
             self.config["GRU_HIDDEN_DIM"] // 2,
@@ -148,7 +148,7 @@ class MultiActionOutputAutoregressive(nn.Module):
             name=f'action_{action_idx}_hidden'
         )(combined)
         hidden = nn.relu(hidden)
-        
+
         # Output logits
         logits = nn.Dense(
             self.action_dims[action_idx],
@@ -156,25 +156,25 @@ class MultiActionOutputAutoregressive(nn.Module):
             bias_init=constant(0.0),
             name=f'action_{action_idx}_head'
         )(hidden)
-        
+
         return logits
 
     @nn.compact
     def __call__(self, x, given_actions=None):
         """
         Compute autoregressive action distribution.
-        
+
         Args:
             x: actor features from the network
             given_actions: Optional. If provided (during training), use these for conditioning.
                           Shape: (..., num_actions). Otherwise sample autoregressively.
-        
+
         Returns:
             AutoregressiveMultiCategorical distribution object
         """
         if not isinstance(self.action_dims, (list, tuple)):
             raise ValueError("action_dims must be a list or tuple for MultiActionOutputAutoregressive.")
-        
+
         # Return a distribution that can sample autoregressively or compute log_prob
         return AutoregressiveMultiCategorical(
             actor_features=x,
@@ -257,23 +257,23 @@ class ActorCriticRNN(nn.Module):
 class MultiCategorical():
     """Wrapper for multiple independent categorical distributions.
     NOTE: The correct thing would be to let it inherit from distrax.Distribution but
-    this requires additional thought to implement all abstract methods, many of which are not 
+    this requires additional thought to implement all abstract methods, many of which are not
     needed for this use case. """
-    
+
     def __init__(self, logits_list):
         self.categoricals = [distrax.Categorical(logits=logits) for logits in logits_list]
 
-    
+
     def sample(self, seed):
         keys = jax.random.split(seed, len(self.categoricals))
         samples = [cat.sample(seed=key) for cat, key in zip(self.categoricals, keys)]
         return jnp.stack(samples, axis=-1)  # Shape: (..., num_outputs)
-    
+
     def log_prob(self, actions):
         # actions should have shape (..., num_outputs)
         log_probs = [cat.log_prob(actions[...,i]) for i, cat in enumerate(self.categoricals)]
         return jnp.sum(jnp.stack(log_probs, axis=-1), axis=-1)  # Sum log probs for independence
-    
+
     def entropy(self):
         entropies = [cat.entropy() for cat in self.categoricals]
         return jnp.sum(jnp.stack(entropies, axis=-1), axis=-1)  # Sum entropies for independence
@@ -281,13 +281,13 @@ class MultiCategorical():
 
 class AutoregressiveMultiCategorical():
     """
-    Wrapper for multiple categorical distributions where later actions 
+    Wrapper for multiple categorical distributions where later actions
     are conditioned on previously sampled actions.
-    
+
     During sampling: samples actions sequentially, feeding each into the next.
     During training: computes conditional log probabilities using given actions.
     """
-    
+
     def __init__(self, actor_features, action_dims, logits_fn, given_actions=None):
         """
         Args:
@@ -301,51 +301,51 @@ class AutoregressiveMultiCategorical():
         self.action_dims = action_dims
         self.logits_fn = logits_fn
         self.given_actions = given_actions
-    
+
     def sample(self, seed):
         """Sample actions autoregressively."""
         keys = jax.random.split(seed, len(self.action_dims))
         samples = []
-        
+
         for i, key in enumerate(keys):
             # Get logits conditioned on previously sampled actions
             logits = self.logits_fn(self.actor_features, i, samples)
             action = distrax.Categorical(logits=logits).sample(seed=key)
             samples.append(action)
-        
+
         return jnp.stack(samples, axis=-1)  # Shape: (..., num_actions)
-    
+
     def log_prob(self, actions):
         """
         Compute log probability of action sequence.
         Uses chain rule: log p(a1,a2,a3) = log p(a1) + log p(a2|a1) + log p(a3|a1,a2)
-        
+
         Args:
             actions: action sequence, shape (..., num_actions)
         """
         log_probs = []
-        
+
         for i in range(len(self.action_dims)):
             # Get previous actions for conditioning
             prev_actions = [actions[..., j] for j in range(i)]
-            
+
             # Get conditional logits
             logits = self.logits_fn(self.actor_features, i, prev_actions)
-            
+
             # Compute log prob of this action given previous ones
             log_p = distrax.Categorical(logits=logits).log_prob(actions[..., i])
             log_probs.append(log_p)
-        
+
         # Sum log probabilities (chain rule)
         return jnp.sum(jnp.stack(log_probs, axis=-1), axis=-1)
-    
+
     def entropy(self):
         """
         Compute entropy of the autoregressive distribution.
         For autoregressive models: H = sum of conditional entropies
         """
         entropies = []
-        
+
         # For entropy, we need to marginalize over previous actions
         # Simplified: compute entropy of each conditional separately
         # (This is an approximation - true entropy requires marginalization)
@@ -356,11 +356,11 @@ class AutoregressiveMultiCategorical():
             else:
                 # For first action or when no given actions, use empty list
                 prev_actions = []
-            
+
             logits = self.logits_fn(self.actor_features, i, prev_actions)
             entropy = distrax.Categorical(logits=logits).entropy()
             entropies.append(entropy)
-        
+
         return jnp.sum(jnp.stack(entropies, axis=-1), axis=-1)
 
 
@@ -427,12 +427,12 @@ def create_agent_configs(
     1. Default attributes from the EnvironmentConfig classes
     2. Values from the JSON config
     3. Sweep parameters from BASELINE_CONFIGS or AGENT_CONFIGS
-    
+
     Args:
         config: The full config dict containing both JSON config and sweep parameters
         config_dict: Dict mapping agent type names to their config classes
                     e.g., {"MarketMaking": MarketMaking_EnvironmentConfig, ...}
-    
+
     Returns:
         Dict of agent configs keyed by agent type name
     """
@@ -468,7 +468,7 @@ def make_sim(config):
     print("init_key: ", init_key)
 
     print("init_key: ", init_key)
-    
+
 
 
 
@@ -675,6 +675,97 @@ def make_sim(config):
             traj_batch = metric["traj_batch"]
             if len(traj_batch) >= 2:
                 mm_info = traj_batch[0].info["agent"]
+
+                # ================= THESIS: estimate rho_mm_star =================
+                # Only estimate from learned-vs-learned validation trajectories.
+                # combo_prefix == "LL" means learned MM against learned EXE.
+                if combo_prefix == "LL" and "reward_base_mm" in mm_info and "squared_inventory" in mm_info:
+                    base_reward = step_env_array(mm_info["reward_base_mm"])
+                    q2 = step_env_array(mm_info["squared_inventory"])
+
+                    # Expected shape after step_env_array: [NUM_STEPS, NUM_ENVS]
+                    ep_abs_base_reward = np.nansum(np.abs(base_reward), axis=0)
+                    ep_q2 = np.nansum(q2, axis=0)
+
+                    valid = (
+                        np.isfinite(ep_abs_base_reward)
+                        & np.isfinite(ep_q2)
+                        & (ep_q2 > 1e-12)
+                    )
+
+                    if np.any(valid):
+                        rho_mm_star_ratio_of_means = (
+                            np.nanmean(ep_abs_base_reward[valid])
+                            / (np.nanmean(ep_q2[valid]) + 1e-12)
+                        )
+
+                        episode_ratios = (
+                            ep_abs_base_reward[valid]
+                            / (ep_q2[valid] + 1e-12)
+                        )
+
+                        rho_mm_star_mean_episode_ratio = np.nanmean(episode_ratios)
+                        rho_mm_star_median_episode_ratio = np.nanmedian(episode_ratios)
+
+                        rho_payload = {
+                            "rho_mm_star_primary": float(rho_mm_star_ratio_of_means),
+                            "rho_mm_star_ratio_of_means": float(rho_mm_star_ratio_of_means),
+                            "rho_mm_star_mean_episode_ratio": float(rho_mm_star_mean_episode_ratio),
+                            "rho_mm_star_median_episode_ratio": float(rho_mm_star_median_episode_ratio),
+
+                            "sweep_values": {
+                                "rho_0": 0.0,
+                                "rho_0p25_star": float(0.25 * rho_mm_star_ratio_of_means),
+                                "rho_1_star": float(rho_mm_star_ratio_of_means),
+                                "rho_4_star": float(4.0 * rho_mm_star_ratio_of_means),
+                            },
+
+                            "numerator_mean_ep_sum_abs_reward_base_mm": float(np.nanmean(ep_abs_base_reward[valid])),
+                            "denominator_mean_ep_sum_squared_inventory": float(np.nanmean(ep_q2[valid])),
+                            "valid_episode_count": int(np.sum(valid)),
+                            "total_episode_count": int(ep_q2.shape[0]),
+
+                            "combo": combo_prefix,
+                            "eval_period": config.get("EvalTimePeriod"),
+                            "restore_project": config.get("RESTORE_PROJECT"),
+                            "restore_run": config.get("RESTORE_RUN"),
+                            "restore_step": config.get("RESTORE_STEP"),
+                            "env_config": config.get("ENV_CONFIG"),
+                            "num_envs": config.get("NUM_ENVS"),
+                            "num_steps": config.get("NUM_STEPS"),
+                            "seed": config.get("SEED"),
+                        }
+
+                        # Log to W&B.
+                        for k, v in rho_payload.items():
+                            if isinstance(v, (int, float, np.integer, np.floating)):
+                                add_metric(k, v)
+
+                        for k, v in rho_payload["sweep_values"].items():
+                            add_metric(k, v)
+
+                        # Save JSON artifact locally.
+                        out_dir = os.path.join(
+                            config["world_config"]["alphatradePath"],
+                            "results",
+                            "rho_star",
+                        )
+                        os.makedirs(out_dir, exist_ok=True)
+
+                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        out_path = os.path.join(
+                            out_dir,
+                            f"rho_mm_star_{combo_prefix}_{timestamp}.json",
+                        )
+
+                        with open(out_path, "w") as f:
+                            json.dump(rho_payload, f, indent=2, sort_keys=True)
+
+                        print(f"[rho-star] Saved rho_mm_star estimate to {out_path}")
+                        print(f"[rho-star] rho_mm_star_primary = {rho_mm_star_ratio_of_means}")
+                    else:
+                        print("[rho-star] No valid episodes with nonzero squared inventory.")
+                # ================================================================
                 exe_info = traj_batch[1].info["agent"]
 
                 if "reward_portfolio_value" in mm_info:
@@ -744,7 +835,7 @@ def make_sim(config):
 
                 # SELECT ACTION
                 rng, _rng = jax.random.split(rng)
-                
+
                 # Ignore getting the available actions for now, assume all actions are available.
                 # avail_actions = jax.vmap(env.get_avail_actions)(env_state.env_state)
                 # avail_actions = jax.lax.stop_gradient(
@@ -808,7 +899,7 @@ def make_sim(config):
                 )(rng_step, env_state, actions,env_params)
 
                 # info = jax.tree.map(lambda x: x.reshape((config["NUM_ACTORS"])), info)
-                
+
                 done_batch=done
                 transitions=[]
                 for i, train_state in enumerate(train_states):
@@ -856,11 +947,11 @@ def make_sim(config):
 
             metrics['avg_reward'] = [jnp.mean(tr.reward) for tr in traj_batch]
             metrics["traj_batch"] = traj_batch
-            metrics["total_dones"] = total_dones   
+            metrics["total_dones"] = total_dones
 
 
 
-           
+
             metrics["update_steps"] = update_steps
             update_steps = update_steps + 1
             runner_state = (train_states, env_state, last_obs, last_dones, hstates_new, rng)
@@ -870,7 +961,7 @@ def make_sim(config):
 
 
         jitted_update_step = jax.jit(_update_step,static_argnums=(2,))
-        
+
         def eval_policies(rng, config):
             """
             Run evaluation with different policy combinations:
@@ -878,15 +969,15 @@ def make_sim(config):
             - Baseline vs. Learned
             - Baseline vs. Baseline
             - Learned vs. Learned
-            
+
             Generalizes to n agents per type.
             """
 
-            
-            
+
+
             # All possible policy combinations
             policy_combinations = []
-            
+
             # For n agent types, we have 2^n possible combinations (each type can be either learned or baseline)
             n_combos= 2 ** len(config["NUM_AGENTS_PER_TYPE"])
             for i in range(n_combos):
@@ -895,11 +986,11 @@ def make_sim(config):
                 binary = format(i, f'0{len(config["NUM_AGENTS_PER_TYPE"])}b')
                 policy_choices = [int(bit) for bit in binary]
                 policy_combinations.append(policy_choices)
-            
+
             results = {}
 
             policy_choice = policy_combinations[0]
-            
+
             bl_init_hiddens , bl_train_states, bl_init_dones_agents = None, None, None
             lrn_hstates, lrn_train_states, lrn_init_dones_agents = None, None, None
             baselinetuple=((),(),())
@@ -910,11 +1001,11 @@ def make_sim(config):
 
 
             def eval_policy_choice(env_params,results,combo_idx,policy_choice,rng,baselinetuple,learnedtuple):
-                n_agent_types = len(config["NUM_AGENTS_PER_TYPE"])    
+                n_agent_types = len(config["NUM_AGENTS_PER_TYPE"])
                 # policy_choice=[1,1]
                 # Create a description of this combination (e.g., "L-B" for Learned-Baseline)
                 combo_desc = ''.join(['L' if choice == 1 else 'B' for choice in policy_choice])
-                
+
                 print(f"\nEvaluating policy combination {combo_idx+1}/{len(policy_combinations)}: {combo_desc}")
 
                 # Create a dictionary of agent configs based on policy choice
@@ -933,14 +1024,14 @@ def make_sim(config):
                 rng, _rng = jax.random.split(rng)
                 reset_rng = jax.random.split(_rng, config["NUM_ENVS"])
                 obsv, env_state = jax.vmap(env.reset, in_axes=(0, None))(reset_rng, env_params)
-                
+
                 # Initialize hidden states and dones
                 hstates_eval = []
                 dones_eval = []
-                
+
                 # For each agent type, choose either learned or baseline policy
                 train_states_eval = []
-                
+
                 for i in range(n_agent_types):
                     if policy_choice[i] == 1:  # Use learned policy
                         print("appending Learned policy for agent type", i)
@@ -952,7 +1043,7 @@ def make_sim(config):
                         hstates_eval.append(bl_init_hiddens[i])
                         train_states_eval.append(bl_train_states[i])
                         dones_eval.append(bl_init_dones_agents[i])
-                
+
                 # Run evaluation
                 eval_runner_state = (
                     train_states_eval,
@@ -962,7 +1053,7 @@ def make_sim(config):
                     hstates_eval,
                     rng,
                 )
-                
+
                 (eval_runner_state, _), eval_metrics = jitted_update_step((eval_runner_state, 0), env_params,env)
                 callback(eval_metrics, combo_desc)
 
@@ -972,7 +1063,7 @@ def make_sim(config):
                     'total_dones': eval_metrics['total_dones'],
                     'traj_batch': eval_metrics['traj_batch']
                 }
-                
+
                 print(f"Results for {combo_desc}:")
                 for i in range(n_agent_types):
                     agent_type = 'L' if policy_choice[i] == 1 else 'B'
@@ -1002,8 +1093,8 @@ def make_sim(config):
         print("Running evaluations with all possible policy combinations...")
         eval_results = eval_policies(rng, config)
 
-    
-        
+
+
         return {"results": eval_results}
 
     return run
@@ -1014,14 +1105,14 @@ def get_ma_config(config, policy_choice, combo_desc):
     for i, use_learned in enumerate(policy_choice):
         agent_type = list(config["AGENT_CONFIGS"].keys())[i]
         # Start with common agent config
-        
+
         if use_learned == 0:  # Use baseline policy - apply baseline overrides
             override_str="BASELINE_CONFIGS"
         elif use_learned == 1:  # Use learned policy - apply learned overrides
             override_str="AGENT_CONFIGS"
         else:
             raise ValueError(f"In get_ma_config: \n\t Invalid policy choice {use_learned} for agent type {agent_type}")
-        
+
         override_by_agent[agent_type] = override_str
 
     agent_configs = create_agent_configs(config, override_by_agent=override_by_agent)
@@ -1047,7 +1138,7 @@ def get_ma_config(config, policy_choice, combo_desc):
             timePeriod=config["EvalTimePeriod"],
             save_raw_observations=True,
             # Only override parameters that exist in both config and World_EnvironmentConfig
-            **{k: v for k, v in config["world_config"].items() 
+            **{k: v for k, v in config["world_config"].items()
             if hasattr(World_EnvironmentConfig(), k) and k not in ["seed",
                                                                     "timePeriod",
                                                                     "save_raw_observations"]}
@@ -1081,7 +1172,7 @@ def seperate_main(config):
 
     # jax.profiler.start_trace("/tmp/profile-data")
 
-    
+
     run = None
     try:
         if config["WANDB_MODE"] != "disabled":
@@ -1113,9 +1204,9 @@ def seperate_main(config):
 
 
 
-    
 
-        
+
+
 
 
 

@@ -1,0 +1,12 @@
+RUN_ID=mm_risk_neutral_train_24279105
+JOB_ID=24279105
+NODE=gcn160.local.snellius.surf.nl
+STARTED=2026-06-29T02:24:00+02:00
+REPO_ROOT=/home/adong/JaxMARL-HFT
+DATA_ROOT=/home/adong/JaxMARL-HFT/data
+LOBSTER_DIR=/home/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train
+EXP_FILE=snellius_scripts/experiments/mm_risk_neutral_train.env
+CUDA_VISIBLE_DEVICES=0,1,2,3
+SLURM_GPUS=4
+SLURM_CPUS_PER_TASK=64
+Finished: 2026-06-29T02:24:29+02:00

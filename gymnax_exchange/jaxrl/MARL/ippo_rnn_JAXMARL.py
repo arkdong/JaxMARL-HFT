@@ -8,6 +8,10 @@ import pandas as pd
 import csv
 import wandb.sdk
 
+from gymnax_exchange.jaxrl.MARL.risk_neutral_export import (
+    export_risk_neutral_train_summary,
+)
+
 from gymnax_exchange.jaxob.config_io import load_config_from_file, save_config_to_file
 os.environ.setdefault("XLA_PYTHON_CLIENT_MEM_FRACTION", "0.95")
 os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "true")
@@ -20,7 +24,7 @@ logging.getLogger('orbax').setLevel(logging.ERROR)
 logging.getLogger('absl').setLevel(logging.ERROR)
 
 import time
-import jax # type: ignorepip 
+import jax # type: ignorepip
 jax.config.update('jax_disable_jit', False)
 
 import jax.numpy as jnp # type: ignore
@@ -77,7 +81,7 @@ class ScannedRNN(nn.Module):
         # Use a dummy key since the default state init fn is just zeros.
         cell = nn.GRUCell(features=hidden_size)
         return cell.initialize_carry(jax.random.PRNGKey(0), (batch_size, hidden_size))
-    
+
 class MultiActionOutputIndependant(nn.Module):
     action_dims: Sequence[int]
     config: Dict
@@ -108,7 +112,7 @@ class MultiActionOutputAutoregressive(nn.Module):
     def get_logits_for_action(self, x, action_idx, prev_actions):
         """
         Compute logits for action_idx conditioned on prev_actions.
-        
+
         Args:
             x: actor features (batch, feature_dim)
             action_idx: which action we're computing logits for (0, 1, 2, ...)
@@ -117,13 +121,13 @@ class MultiActionOutputAutoregressive(nn.Module):
         if action_idx == 0:
             # First action: no conditioning
             logits = nn.Dense(
-                self.action_dims[0], 
-                kernel_init=orthogonal(0.01), 
+                self.action_dims[0],
+                kernel_init=orthogonal(0.01),
                 bias_init=constant(0.0),
                 name=f'action_{action_idx}_head'
             )(x)
             return logits
-        
+
         # Subsequent actions: condition on previous actions
         embeddings = []
         for i, prev_action in enumerate(prev_actions):
@@ -134,10 +138,10 @@ class MultiActionOutputAutoregressive(nn.Module):
                 name=f'action_{i}_embed'
             )(prev_action)
             embeddings.append(embed)
-        
+
         # Concatenate features with all previous action embeddings
         combined = jnp.concatenate([x] + embeddings, axis=-1)
-        
+
         # Process through hidden layer
         hidden = nn.Dense(
             self.config["GRU_HIDDEN_DIM"] // 2,
@@ -146,7 +150,7 @@ class MultiActionOutputAutoregressive(nn.Module):
             name=f'action_{action_idx}_hidden'
         )(combined)
         hidden = nn.relu(hidden)
-        
+
         # Output logits
         logits = nn.Dense(
             self.action_dims[action_idx],
@@ -154,25 +158,25 @@ class MultiActionOutputAutoregressive(nn.Module):
             bias_init=constant(0.0),
             name=f'action_{action_idx}_head'
         )(hidden)
-        
+
         return logits
 
     @nn.compact
     def __call__(self, x, given_actions=None):
         """
         Compute autoregressive action distribution.
-        
+
         Args:
             x: actor features from the network
             given_actions: Optional. If provided (during training), use these for conditioning.
                           Shape: (..., num_actions). Otherwise sample autoregressively.
-        
+
         Returns:
             AutoregressiveMultiCategorical distribution object
         """
         if not isinstance(self.action_dims, (list, tuple)):
             raise ValueError("action_dims must be a list or tuple for MultiActionOutputAutoregressive.")
-        
+
         # Return a distribution that can sample autoregressively or compute log_prob
         return AutoregressiveMultiCategorical(
             actor_features=x,
@@ -260,23 +264,23 @@ class ActorCriticRNN(nn.Module):
 class MultiCategorical():
     """Wrapper for multiple independent categorical distributions.
     NOTE: The correct thing would be to let it inherit from distrax.Distribution but
-    this requires additional thought to implement all abstract methods, many of which are not 
+    this requires additional thought to implement all abstract methods, many of which are not
     needed for this use case. """
-    
+
     def __init__(self, logits_list):
         self.categoricals = [distrax.Categorical(logits=logits) for logits in logits_list]
 
-    
+
     def sample(self, seed):
         keys = jax.random.split(seed, len(self.categoricals))
         samples = [cat.sample(seed=key) for cat, key in zip(self.categoricals, keys)]
         return jnp.stack(samples, axis=-1)  # Shape: (..., num_outputs)
-    
+
     def log_prob(self, actions):
         # actions should have shape (..., num_outputs)
         log_probs = [cat.log_prob(actions[...,i]) for i, cat in enumerate(self.categoricals)]
         return jnp.sum(jnp.stack(log_probs, axis=-1), axis=-1)  # Sum log probs for independence
-    
+
     def entropy(self):
         entropies = [cat.entropy() for cat in self.categoricals]
         return jnp.sum(jnp.stack(entropies, axis=-1), axis=-1)  # Sum entropies for independence
@@ -284,13 +288,13 @@ class MultiCategorical():
 
 class AutoregressiveMultiCategorical():
     """
-    Wrapper for multiple categorical distributions where later actions 
+    Wrapper for multiple categorical distributions where later actions
     are conditioned on previously sampled actions.
-    
+
     During sampling: samples actions sequentially, feeding each into the next.
     During training: computes conditional log probabilities using given actions.
     """
-    
+
     def __init__(self, actor_features, action_dims, logits_fn, given_actions=None):
         """
         Args:
@@ -304,51 +308,51 @@ class AutoregressiveMultiCategorical():
         self.action_dims = action_dims
         self.logits_fn = logits_fn
         self.given_actions = given_actions
-    
+
     def sample(self, seed):
         """Sample actions autoregressively."""
         keys = jax.random.split(seed, len(self.action_dims))
         samples = []
-        
+
         for i, key in enumerate(keys):
             # Get logits conditioned on previously sampled actions
             logits = self.logits_fn(self.actor_features, i, samples)
             action = distrax.Categorical(logits=logits).sample(seed=key)
             samples.append(action)
-        
+
         return jnp.stack(samples, axis=-1)  # Shape: (..., num_actions)
-    
+
     def log_prob(self, actions):
         """
         Compute log probability of action sequence.
         Uses chain rule: log p(a1,a2,a3) = log p(a1) + log p(a2|a1) + log p(a3|a1,a2)
-        
+
         Args:
             actions: action sequence, shape (..., num_actions)
         """
         log_probs = []
-        
+
         for i in range(len(self.action_dims)):
             # Get previous actions for conditioning
             prev_actions = [actions[..., j] for j in range(i)]
-            
+
             # Get conditional logits
             logits = self.logits_fn(self.actor_features, i, prev_actions)
-            
+
             # Compute log prob of this action given previous ones
             log_p = distrax.Categorical(logits=logits).log_prob(actions[..., i])
             log_probs.append(log_p)
-        
+
         # Sum log probabilities (chain rule)
         return jnp.sum(jnp.stack(log_probs, axis=-1), axis=-1)
-    
+
     def entropy(self):
         """
         Compute entropy of the autoregressive distribution.
         For autoregressive models: H = sum of conditional entropies
         """
         entropies = []
-        
+
         # For entropy, we need to marginalize over previous actions
         # Simplified: compute entropy of each conditional separately
         # (This is an approximation - true entropy requires marginalization)
@@ -359,11 +363,11 @@ class AutoregressiveMultiCategorical():
             else:
                 # For first action or when no given actions, use empty list
                 prev_actions = []
-            
+
             logits = self.logits_fn(self.actor_features, i, prev_actions)
             entropy = distrax.Categorical(logits=logits).entropy()
             entropies.append(entropy)
-        
+
         return jnp.sum(jnp.stack(entropies, axis=-1), axis=-1)
 
 class Transition(NamedTuple):
@@ -391,12 +395,12 @@ def create_agent_configs(config):
     1. Default attributes from the EnvironmentConfig classes
     2. Values from the JSON config
     3. Sweep parameters from AGENT_CONFIGS
-    
+
     Args:
         config: The full config dict containing both JSON config and sweep parameters
         config_dict: Dict mapping agent type names to their config classes
                     e.g., {"MarketMaking": MarketMaking_EnvironmentConfig, ...}
-    
+
     Returns:
         Dict of agent configs keyed by agent type name
     """
@@ -440,7 +444,7 @@ def make_train(config):
     # Create a MultiAgentConfig object with parameters from the config
     print ("Overriding the Agent config objects with the variable from the sweep parameters.")
     agent_configs = create_agent_configs(config)
-    
+
     ma_config = MultiAgentConfig(
         number_of_agents_per_type=config["NUM_AGENTS_PER_TYPE"],
         dict_of_agents_configs=agent_configs,
@@ -469,12 +473,12 @@ def make_train(config):
                         seed=config["SEED"],
                         timePeriod=str(config["EvalTimePeriod"]),
                         # Only override parameters that exist in both config and World_EnvironmentConfig
-                        **{k: v for k, v in config["world_config"].items() 
+                        **{k: v for k, v in config["world_config"].items()
                         if hasattr(World_EnvironmentConfig(), k) and k not in ["seed",
                                                                                "timePeriod",
                                                                                ]}
                     ))
-   
+
 
     env : MARLEnv = MARLEnv(key=init_key, multi_agent_config=ma_config)
     if config["CALC_EVAL"]:
@@ -512,7 +516,7 @@ def make_train(config):
     def train(rng, run: wandb.sdk.wandb_run.Run = None):
         # INIT NETWORK
         # For a given agent type (instance) we need the following inputs:
-        # Action space, obs space, 
+        # Action space, obs space,
 
         # The outputs that depends on these and are kept seperate are;
         # - network, init_x, init_hstate, network_params, train_state
@@ -584,7 +588,7 @@ def make_train(config):
         obsv = jax.tree.map(lambda x: jax.lax.with_sharding_constraint(x, batch_sharding), obsv)
         env_state = jax.tree.map(lambda x: jax.lax.with_sharding_constraint(x, batch_sharding), env_state)
         # TRAIN LOOP
-        
+
 
         def _update_step(update_runner_state,env_params,eval_env_params, unused):
             # COLLECT TRAJECTORIES
@@ -594,7 +598,7 @@ def make_train(config):
 
                 # SELECT ACTION
                 rng, _rng = jax.random.split(rng)
-                
+
                 # Ignore getting the available actions for now, assume all actions are available.
                 # avail_actions = jax.vmap(env.get_avail_actions)(env_state.env_state)
                 # avail_actions = jax.lax.stop_gradient(
@@ -648,7 +652,7 @@ def make_train(config):
                 # jax.debug.callback(reward_callback, jnp.argmax(jnp.abs(reward[0])), reward[0], env_state.world_state.trades, env_state.world_state.bid_raw_orders, env_state.world_state.ask_raw_orders,env_state.agent_states[0].p_vwap)
 
                 # info = jax.tree.map(lambda x: x.reshape((config["NUM_ACTORS"])), info)
-                
+
                 done_batch=done
                 transitions=[]
                 for i,train_state in enumerate(train_states):
@@ -789,7 +793,7 @@ def make_train(config):
                         )
                         train_state = train_state.apply_gradients(grads=grads)
                         return train_state, total_loss
-                    
+
                     (
                         train_state,
                         init_hstate,
@@ -896,7 +900,7 @@ def make_train(config):
                 def _eval_step(eval_runner_state, unused):
                     train_states, eval_env_state, last_obs, last_done,h_states, rng = eval_runner_state
                     rng, _rng = jax.random.split(rng)
-                
+
                     actions=[]
                     values=[]
                     log_probs=[]
@@ -919,7 +923,7 @@ def make_train(config):
                         rng, _rng = jax.random.split(rng)
                         rng_step = jax.random.split(_rng, config["NUM_ENVS"])
 
-                
+
 
 
 
@@ -937,7 +941,7 @@ def make_train(config):
                     reward = jax.tree.map(lambda x: jax.lax.with_sharding_constraint(x, batch_sharding), reward)
                     done = jax.tree.map(lambda x: jax.lax.with_sharding_constraint(x, batch_sharding), done)
                     done_batch=done
-                    transitions=[]    
+                    transitions=[]
 
                     for i, train_state in enumerate(train_states):
                         done_batch['agents'][i] = batchify(done["agents"][i],config["NUM_ACTORS_PERTYPE"][i]).squeeze()
@@ -978,7 +982,7 @@ def make_train(config):
                     init_dones_agents_eval.append(jnp.zeros((config["NUM_ACTORS_PERTYPE"][i]), dtype=bool))
 
 
-                
+
                 eval_runner_state = (
                 train_states,
                 eval_env_state,
@@ -1022,7 +1026,7 @@ def make_train(config):
                         # Add each action count to the dictionary with a unique key
                         for a, c in zip(unique_actions, counts):
                             action_distribution[f"agent_{agent_name}/action_{int(a)}"] = c/tot_counts*100
-                    
+
                     logging_dict = {
                         # TODO: Log the quantities of interest. Keep it trivial for now.
                         "env_step": (metric["update_steps"]+1)
@@ -1032,8 +1036,8 @@ def make_train(config):
                         **{f"agent_{agent_name}/reward": metric["avg_reward"][agent_index]},
                         **action_distribution
                     }
-                
-                    
+
+
                     for key, value in tr.info['agent'].items():
                     # Check if value is a numpy array or jax array and has elements
                         if isinstance(value, (jnp.ndarray, np.ndarray)) and value.size > 0:
@@ -1042,7 +1046,7 @@ def make_train(config):
                                 # Get agent short_name from config
                                 logging_dict[f"agent_{agent_name}/{key}_mean"] = float(np.mean(flat_value))
                                 logging_dict[f"agent_{agent_name}/{key}_std"] = float(np.std(flat_value))
-                    
+
                     # Process world info if available
                     if 'world' in tr.info and tr.info['world']:
                         for key, value in tr.info['world'].items():
@@ -1069,7 +1073,7 @@ def make_train(config):
                                 if flat_value.size > 0:
                                     logging_dict[f"eval_agent_{agent_name}/{key}_mean"] = float(np.mean(flat_value))
                                     logging_dict[f"eval_agent_{agent_name}/{key}_std"] = float(np.std(flat_value))
-                        
+
                         # Process world eval info if available
                         if 'world' in tr.info and tr.info['world']:
                             for key, value in tr.info['world'].items():
@@ -1127,7 +1131,7 @@ def make_train(config):
         )
 
         jitted_update_step = jax.jit(_update_step)
-        
+
 
         checkpoint_dir=f'{config["world_config"]["alphatradePath"]}/checkpoints/MARLCheckpoints/{config["PROJECT"]}/{(run.name if run.name else run.id) if run else "GENERIC_RUN"}'
         orbax_checkpointer = oxcp.PyTreeCheckpointer()
@@ -1138,7 +1142,7 @@ def make_train(config):
         print("Saving checkpoints to directory: \n \t",checkpoint_dir)
 
 
-        
+
         updates=0
         for i in range(config["NUM_UPDATES"]):
             print(f"Starting Update step {i+1}/{config['NUM_UPDATES']}")
@@ -1175,21 +1179,60 @@ def make_train(config):
             print(f"Saving checkpoint {updates}")
             save_args = orbax_utils.save_args_from_target(ckpt)
             checkpoint_manager.save(updates, ckpt, save_kwargs={"save_args": save_args})
+
+            # ================= THESIS: risk-neutral training export =================
+            if (
+                "MarketMaking" in agent_configs
+                and agent_configs["MarketMaking"].inv_penalty == "quadratic_rho"
+                and float(agent_configs["MarketMaking"].rho_mm) == 0.0
+                and i == config["NUM_UPDATES"] - 1
+            ):
+                export_risk_neutral_train_summary(
+                    config=config,
+                    metrics=metrics,
+                    checkpoint_dir=checkpoint_dir,
+                    checkpoint_step=updates,
+                    run_name=(run.name if run is not None and getattr(run, "name", None) else None),
+                )
+            # =======================================================================
+
             del metrics
             gc.collect()
-        
+
 
         checkpoint_manager.wait_until_finished()
 
         # runner_state, metrics = jax.lax.scan(
         #     _update_step, (runner_state, 0), None, config["NUM_UPDATES"]
         # )
-        
-        
+
+
         return {"runner_state": runner_state}
 
     return train
 
+
+import copy
+
+
+def deep_merge_dict(base, override):
+    """
+    Recursively merge override into base.
+    Used to combine the full Hydra/env config with W&B sweep parameters.
+    """
+    out = copy.deepcopy(base)
+
+    for key, value in override.items():
+        if (
+            key in out
+            and isinstance(out[key], dict)
+            and isinstance(value, dict)
+        ):
+            out[key] = deep_merge_dict(out[key], value)
+        else:
+            out[key] = value
+
+    return out
 
 @hydra.main(version_base="1.3", config_path="../../../config/rl_configs", config_name="ippo_rnn_JAXMARL_exec")
 def main(config):
@@ -1242,28 +1285,44 @@ def main(config):
             config_exclude_keys=[] if is_single_run else ["SEED"],
         )
 
-    
+
+        # +++++ Build full runtime config +++++
+        # In a W&B sweep, wandb.config only contains swept values such as
+        # SEED and AGENT_CONFIGS. The trainer needs the full Hydra/env config.
+        sweep_overrides = dict(wandb.config)
+        run_config = deep_merge_dict(config, sweep_overrides)
+
+        # Optional but useful: store the full runtime config in W&B for reproducibility.
+        # Only add missing keys to avoid fighting W&B sweep-controlled fields.
+        try:
+            missing_for_wandb = {
+                k: v for k, v in run_config.items()
+                if k not in wandb.config
+            }
+            wandb.config.update(missing_for_wandb, allow_val_change=True)
+        except Exception as e:
+            print(f"Warning: could not update W&B config with full run_config: {e}")
+
         # +++++ Single GPU +++++
-        rng = jax.random.PRNGKey(wandb.config["SEED"])
+        rng = jax.random.PRNGKey(int(run_config["SEED"]))
 
-        print("Final check: the wandb.config object used in this run is \n \t", wandb.config)
+        print("Final check: the runtime config object used in this run is \n \t", run_config)
 
-        if config["Timing"]:
+        if run_config["Timing"]:
             start_time = time.time()
 
-
-        train_fun = make_train(wandb.config)
-        out = train_fun(rng,run)
+        train_fun = make_train(run_config)
+        out = train_fun(rng, run)
         # train_state = out['runner_state'][0] # runner_state.train_state
         # params = train_state.params
 
         if config["Timing"]:
             end_time = time.time()
             elapsed = end_time - start_time
-            total_steps = config["TOTAL_TIMESTEPS"]
-            agents_per_type = config["NUM_AGENTS_PER_TYPE"]
-            num_data_msgs = config.get("n_data_msg_per_step", None)
-            num_envs = config["NUM_ENVS"]
+            total_steps = run_config["TOTAL_TIMESTEPS"]
+            agents_per_type = run_config["NUM_AGENTS_PER_TYPE"]
+            num_data_msgs = run_config.get("n_data_msg_per_step", None)
+            num_envs = run_config["NUM_ENVS"]
 
             # Print results
             print(f"Total steps: {total_steps}")
@@ -1320,7 +1379,7 @@ def main(config):
     else:
         sweep_id = wandb.sweep(sweep=sweep_config, project=config["PROJECT"],entity=config["ENTITY"])
         print("The sweep ID is: ",sweep_id)
-        wandb.agent(sweep_id, function=sweep_fun, count=500,)
+        wandb.agent(sweep_id, function=sweep_fun, count=1,)
 
 
     sys.exit(0)
