@@ -1,0 +1,17 @@
+{
+  "eta_ac": 1.6527777777746165e-05,
+  "gamma_ac": 0.0,
+  "half_spread": 0.010000000000005116,
+  "n_obs": 144022665,
+  "notes": "Median daily AC calibration from LOBSTER train split; gamma_ac kept at zero.",
+  "q_grid": [
+    10,
+    20,
+    50,
+    100,
+    200,
+    400,
+    600
+  ],
+  "sigma_step": 0.022982669025401636
+}

@@ -10,10 +10,13 @@ import pandas as pd
 
 from .calibration import calibrate_ac_params, load_calibration, save_calibration
 from .data import load_lobster_orderbook, read_snapshots, read_table, reconstruct_mbo_snapshots, standardize_snapshot_columns, write_table
+from .fast_calibration import calibrate_ac_params_fast
+from .fast_replay import evaluate_ac_grid_fast
 from .metrics import add_policy_names, aggregate_by_policy, paired_policy_difference
 from .plots import plot_frontier, plot_impact_curve, plot_schedules, plot_slippage_distribution
 from .replay import evaluate_ac_grid
 from .schema import EpisodeSpec
+from .lobster_pipeline import run_lobster_pipeline
 
 
 def _parse_float_grid(s: str) -> list[float]:
@@ -63,7 +66,8 @@ def cmd_reconstruct_mbo(args: argparse.Namespace) -> None:
 def cmd_calibrate(args: argparse.Namespace) -> None:
     snapshots = read_snapshots(args.snapshots, price_scale=args.price_scale, depth_levels=args.levels)
     q_grid = _parse_int_grid(args.q_grid)
-    params, impact_curve = calibrate_ac_params(
+    calibrator = calibrate_ac_params_fast if args.engine == "fast" else calibrate_ac_params
+    params, impact_curve = calibrator(
         snapshots,
         q_grid=q_grid,
         step_stride_rows=args.messages_per_step,
@@ -97,15 +101,26 @@ def cmd_evaluate(args: argparse.Namespace) -> None:
     spec = _episode_spec_from_args(args)
     kappa_T_grid = _parse_float_grid(args.kappa_grid)
 
-    metrics_df, fills_df, plan_df = evaluate_ac_grid(
-        snapshots,
-        spec=spec,
-        kappa_T_grid=kappa_T_grid,
-        depth=args.levels,
-        max_episodes=args.max_episodes,
-        return_fills=args.save_fills,
-        carry_unfilled=not args.no_carry_unfilled,
-    )
+    use_fast = _should_use_fast_replay(args.engine, save_fills=args.save_fills)
+    if use_fast:
+        metrics_df, fills_df, plan_df = evaluate_ac_grid_fast(
+            snapshots,
+            spec=spec,
+            kappa_T_grid=kappa_T_grid,
+            depth=args.levels,
+            max_episodes=args.max_episodes,
+            carry_unfilled=not args.no_carry_unfilled,
+        )
+    else:
+        metrics_df, fills_df, plan_df = evaluate_ac_grid(
+            snapshots,
+            spec=spec,
+            kappa_T_grid=kappa_T_grid,
+            depth=args.levels,
+            max_episodes=args.max_episodes,
+            return_fills=args.save_fills,
+            carry_unfilled=not args.no_carry_unfilled,
+        )
     summary_df = aggregate_by_policy(metrics_df, n_boot=args.n_boot, seed=args.seed)
     summary_df = add_policy_names(summary_df)
 
@@ -155,6 +170,14 @@ def cmd_plot_schedules(args: argparse.Namespace) -> None:
         out_path=args.out,
     )
     print(f"Wrote schedule plot to {args.out}")
+
+
+def _should_use_fast_replay(engine: str, *, save_fills: bool) -> bool:
+    if engine == "slow":
+        return False
+    if engine == "fast" and save_fills:
+        raise SystemExit("--engine fast does not support --save-fills; use --engine slow for fill-level output.")
+    return not save_fills
 
 
 def cmd_make_synthetic(args: argparse.Namespace) -> None:
@@ -217,6 +240,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--max-rows", type=int, default=250000)
     p.add_argument("--price-scale", type=float, default=1.0)
     p.add_argument("--seed", type=int, default=7)
+    p.add_argument("--engine", choices=["fast", "slow"], default="fast")
     p.set_defaults(func=cmd_calibrate)
 
     p = sub.add_parser("evaluate", help="Run AC/TWAP replay evaluation on validation or test snapshots")
@@ -237,7 +261,41 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--n-boot", type=int, default=2000)
     p.add_argument("--save-fills", action="store_true")
     p.add_argument("--no-carry-unfilled", action="store_true")
+    p.add_argument("--engine", choices=["auto", "fast", "slow"], default="auto")
     p.set_defaults(func=cmd_evaluate)
+
+    p = sub.add_parser("run-lobster", help="Run train/validation/test AC pipeline from an AS-style LOBSTER split root")
+    p.add_argument("--data-format", choices=["auto", "lobster"], default="lobster")
+    p.add_argument("--data-dir", type=Path, default=Path("data/rawLOBSTER/AMZN/lobster_amzn_10"))
+    p.add_argument("--output-dir", type=Path, default=Path("results/AC"))
+    p.add_argument("--cache-dir", type=Path, default=Path("data/cache/ac_lobster_10"))
+    p.add_argument("--lobster-levels", type=int, default=10)
+    p.add_argument("--price-scale", type=float, default=10000.0)
+    p.add_argument("--train-start", default=None)
+    p.add_argument("--train-end", default=None)
+    p.add_argument("--val-start", default=None)
+    p.add_argument("--val-end", default=None)
+    p.add_argument("--test-start", default=None)
+    p.add_argument("--test-end", default=None)
+    p.add_argument("--q-grid", default="10,20,50,100,200,400,600")
+    p.add_argument("--kappa-grid", default="0,0.5,1,2,4")
+    p.add_argument("--task-size", type=int, default=600)
+    p.add_argument("--episode-length", type=int, default=64)
+    p.add_argument("--messages-per-step", type=int, default=100)
+    p.add_argument("--episode-start-frequency-steps", type=int, default=64)
+    p.add_argument("--lot-size", type=int, default=10)
+    p.add_argument("--tick-size", type=float, default=0.01)
+    p.add_argument("--directions", choices=["random", "alternating", "buy", "sell"], default="random")
+    p.add_argument("--max-rows-calibration", type=int, default=250000)
+    p.add_argument("--max-episodes", type=int, default=None)
+    p.add_argument("--seed", type=int, default=7)
+    p.add_argument("--n-boot", type=int, default=2000)
+    p.add_argument("--save-fills", action="store_true")
+    p.add_argument("--no-carry-unfilled", action="store_true")
+    p.add_argument("--engine", choices=["auto", "fast", "slow"], default="auto")
+    p.add_argument("--calibration-engine", choices=["fast", "slow"], default="fast")
+    p.add_argument("--no-plots", action="store_true")
+    p.set_defaults(func=run_lobster_pipeline)
 
     p = sub.add_parser("plot-schedules", help="Plot AC remaining-quantity trajectories")
     p.add_argument("--out", required=True)
@@ -264,4 +322,3 @@ def main(argv: Sequence[str] | None = None) -> None:
 
 if __name__ == "__main__":
     main()
-

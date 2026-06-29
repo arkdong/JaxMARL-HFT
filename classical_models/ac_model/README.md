@@ -59,6 +59,47 @@ If the file has flexible names such as `bid_px_00`, `ask_px_00`, `bid_sz_00`, `a
 
 ## LOBSTER input
 
+The recommended thesis path now mirrors the AS baseline input: point AC at a
+LOBSTER split root containing `train/`, `validation/`, and `test/` folders with
+paired `*_message_10.csv` and `*_orderbook_10.csv` files.
+
+From the repository root:
+
+```bash
+uv --project classical_models run ac-benchmark run-lobster \
+  --data-format lobster \
+  --data-dir data/rawLOBSTER/AMZN/lobster_amzn_10 \
+  --cache-dir data/cache/ac_lobster_10 \
+  --output-dir results/AC \
+  --lobster-levels 10
+```
+
+Or use:
+
+```bash
+bash classical_models/ac_model/run_lobster_ac.sh
+```
+
+This pipeline calibrates AC parameters on train, selects one `kappa_T` on
+validation, and evaluates TWAP plus the selected AC policy on test. Main outputs:
+
+```text
+results/AC/ac_calibration.json
+results/AC/ac_daily_calibration.csv
+results/AC/ac_kappa_selection.csv
+results/AC/ac_test_metrics.csv
+results/AC/ac_for_rl_comparison.csv
+results/AC/ac_run_manifest.json
+```
+
+The lower-level command is still available if you want to normalize one file at
+a time.
+
+The CLI now uses vectorized NumPy calibration and replay by default. Use
+`--engine slow` for row-by-row replay, or request `--save-fills` to make
+`--engine auto` fall back to the slow fill-auditable path. Fast replay writes
+the same episode-level metrics but intentionally skips fill-level rows.
+
 For a LOBSTER orderbook file with no header:
 
 ```bash

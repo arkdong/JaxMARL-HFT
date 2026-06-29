@@ -32,7 +32,7 @@
     "fill_model": "lobster_level",
     "horizon_mode": "finite_episode",
     "horizon_seconds": 16.0,
-    "include_symmetric": false,
+    "include_symmetric": true,
     "inventory_limit": 200,
     "lobster_levels": 10,
     "order_size": 10,
@@ -40,6 +40,7 @@
     "target_skew": 0.05,
     "test_strategies": [
       "as_classical_control",
+      "symmetric_mm",
       "no_trade"
     ],
     "tick_size": 0.01

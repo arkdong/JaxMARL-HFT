@@ -46,6 +46,16 @@
       "mean_no_trade_rate": 1.0,
       "mean_order_submission_rate": 0.0,
       "std_final_pv": 0.0
+    },
+    "symmetric_mm": {
+      "episodes": 35088,
+      "max_abs_inventory": 187.0,
+      "mean_avg_q2": 61.36295528385773,
+      "mean_fill_rate": 0.00736140204628363,
+      "mean_final_pv": -0.18452305631554886,
+      "mean_no_trade_rate": 0.985562193627451,
+      "mean_order_submission_rate": 1.0,
+      "std_final_pv": 2.4115423367800743
     }
   }
 }
