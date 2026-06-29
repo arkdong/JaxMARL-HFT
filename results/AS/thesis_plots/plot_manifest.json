@@ -1,0 +1,74 @@
+{
+  "inputs": {
+    "as_gamma_selection": "results/AS/as_gamma_selection.csv",
+    "as_test_metrics": "results/AS/as_test_metrics.csv",
+    "as_test_daily_metrics": "results/AS/as_test_daily_metrics.csv",
+    "as_test_summary": "results/AS/as_test_summary.json",
+    "optional_no_trade_for_rl_comparison": "results/baselines/no_trade_for_rl_comparison.csv"
+  },
+  "outputs": [
+    "results/AS/thesis_plots/01_as_gamma_selection_frontier.png",
+    "results/AS/thesis_plots/01_as_gamma_selection_frontier.pdf",
+    "results/AS/thesis_plots/02_as_gamma_selection_by_gamma.png",
+    "results/AS/thesis_plots/02_as_gamma_selection_by_gamma.pdf",
+    "results/AS/thesis_plots/03_as_test_risk_return_frontier.png",
+    "results/AS/thesis_plots/03_as_test_risk_return_frontier.pdf",
+    "results/AS/thesis_plots/04_as_test_activity_rates.png",
+    "results/AS/thesis_plots/04_as_test_activity_rates.pdf",
+    "results/AS/thesis_plots/05_as_daily_mean_final_pv.png",
+    "results/AS/thesis_plots/05_as_daily_mean_final_pv.pdf",
+    "results/AS/thesis_plots/06_as_daily_avg_q2.png",
+    "results/AS/thesis_plots/06_as_daily_avg_q2.pdf",
+    "results/AS/thesis_plots/07_as_episode_final_pv_distribution.png",
+    "results/AS/thesis_plots/07_as_episode_final_pv_distribution.pdf",
+    "results/AS/thesis_plots/08_as_daily_fill_vs_pv.png",
+    "results/AS/thesis_plots/08_as_daily_fill_vs_pv.pdf",
+    "results/AS/thesis_plots/09_as_episode_q2_vs_pv.png",
+    "results/AS/thesis_plots/09_as_episode_q2_vs_pv.pdf",
+    "results/AS/thesis_plots/10_as_episode_drawdown_distribution.png",
+    "results/AS/thesis_plots/10_as_episode_drawdown_distribution.pdf"
+  ],
+  "tables": [
+    "results/AS/thesis_plots/as_test_strategy_summary.csv",
+    "results/AS/thesis_plots/as_daily_strategy_summary.csv"
+  ],
+  "summary_json_metadata": {
+    "calibration": {
+      "A": 0.045983787841217365,
+      "arrival_fit_method": "log_linear_lobster_level",
+      "data_format": "lobster",
+      "decision_interval_seconds": 0.25,
+      "fill_model": "lobster_level",
+      "gamma_seed": 0.037446853339608885,
+      "horizon_mode": "finite_episode",
+      "horizon_seconds": 16.0,
+      "inventory_limit": 200,
+      "k": 29.656615220296274,
+      "lobster_levels": 10,
+      "num_train_days": 74,
+      "order_size": 10,
+      "sigma": 0.020426894605204596,
+      "sigma_method": "winsorized_midprice_diff",
+      "test_end": "2026-05-11",
+      "test_start": "2026-04-08",
+      "tick_size": 0.01,
+      "train_end": "2026-03-02",
+      "train_start": "2025-11-12",
+      "validation_end": "2026-04-07",
+      "validation_start": "2026-03-03"
+    },
+    "selected_gamma": 0.037446853339608885
+  },
+  "strategies_in_metrics": [
+    "as_classical_control",
+    "no_trade",
+    "symmetric_mm"
+  ],
+  "notes": [
+    "Use 01 and 02 for validation gamma selection.",
+    "Use 03 and 04 as the compact AS benchmark plots.",
+    "Use 05 and 06 for daily robustness and stress-day discussion.",
+    "Use 07, 08, 09, and 10 as distribution/activity diagnostics.",
+    "If symmetric_mm is absent, rerun AS with --include-symmetric before final thesis comparison."
+  ]
+}
