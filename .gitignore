@@ -1,4 +1,4 @@
-**.csv
+# **.csv
 .idea/**/
 **.pyc
 __pycache__/
@@ -46,7 +46,7 @@ checkpoints/
 slurm_logs/**
 
 
-*.png
+# *.png
 *.npy
 *.nfs*
 
