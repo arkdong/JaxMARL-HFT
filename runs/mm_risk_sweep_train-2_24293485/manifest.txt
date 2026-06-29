@@ -1,0 +1,11 @@
+RUN_ID=mm_risk_sweep_train-2_24293485
+JOB_ID=24293485
+NODE=gcn123.local.snellius.surf.nl
+STARTED=2026-06-29T15:40:10+02:00
+REPO_ROOT=/home/adong/JaxMARL-HFT
+DATA_ROOT=/home/adong/JaxMARL-HFT/data
+LOBSTER_DIR=/home/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train
+EXP_FILE=snellius_scripts/experiments/mm_risk_sweep.env
+CUDA_VISIBLE_DEVICES=0
+SLURM_GPUS=1
+SLURM_CPUS_PER_TASK=16

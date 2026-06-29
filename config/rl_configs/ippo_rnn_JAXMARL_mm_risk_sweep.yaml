@@ -8,7 +8,7 @@
 "NUM_STEPS_EVAL" : 64
 "GRU_HIDDEN_DIM": 256
 "FC_DIM_SIZE": 256
-"TOTAL_TIMESTEPS": 5e8
+"TOTAL_TIMESTEPS": 500000000
 "UPDATE_EPOCHS": 4
 "NUM_MINIBATCHES": 4
 "GAMMA": [0.999999999,0.999]
@@ -50,7 +50,8 @@ SWEEP_PARAMETERS:
           inv_penalty:
             values: ["quadratic_rho"]
           rho_mm:
-            values: [0.0, 0.003075, 0.0123, 0.0492]
+            # values: [0.0, 0.006940968304482827, 0.027763873217931306, 0.55527746435, 0.11105549287172523]
+            values: [0.55527746435]
       Execution:
         parameters:
           reward_lambda:
