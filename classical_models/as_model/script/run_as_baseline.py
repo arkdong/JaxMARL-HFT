@@ -7,8 +7,9 @@ import math
 import re
 import struct
 import sys
+import time
 import zlib
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import asdict, dataclass, fields
 from pathlib import Path
 from typing import Any, Iterable, Sequence, Union
@@ -235,6 +236,23 @@ def input_date_range(items: Sequence[BaselineInput]) -> tuple[str | None, str | 
     return (min(dates), max(dates))
 
 
+def progress(message: str) -> None:
+    print(message, flush=True)
+
+
+def input_label(item: BaselineInput) -> str:
+    date = input_date(item)
+    if date is not None:
+        return date
+    if isinstance(item, LobsterDayFiles):
+        return item.message_path.name
+    return item.name
+
+
+def elapsed_seconds(started_at: float) -> str:
+    return f"{time.perf_counter() - started_at:.1f}s"
+
+
 def filter_lobster_by_date(
     pairs: list[LobsterDayFiles],
     start: str | None,
@@ -400,17 +418,54 @@ def _calibrate_day_worker(payload: tuple[BaselineInput, argparse.Namespace]) -> 
 
 def calibrate_training(files: Sequence[BaselineInput], args: argparse.Namespace) -> CalibrationResult:
     rows: list[dict[str, Any]] = []
+    total = len(files)
     if args.workers > 1 and len(files) > 1:
         try:
+            phase_started_at = time.perf_counter()
             with ProcessPoolExecutor(max_workers=args.workers) as pool:
-                rows.extend(pool.map(_calibrate_day_worker, [(item, args) for item in files]))
+                futures = {
+                    pool.submit(_calibrate_day_worker, (item, args)): (idx, input_label(item))
+                    for idx, item in enumerate(files)
+                }
+                results: list[dict[str, Any] | None] = [None] * total
+                for done, future in enumerate(as_completed(futures), start=1):
+                    idx, label = futures[future]
+                    row = future.result()
+                    results[idx] = row
+                    progress(
+                        "[calibration] "
+                        f"{done}/{total} complete {row.get('date', label)} "
+                        f"sigma={row['sigma']:.6g} A={row['A']:.6g} k={row['k']:.6g} "
+                        f"({elapsed_seconds(phase_started_at)} elapsed)"
+                    )
+                rows.extend(row for row in results if row is not None)
         except PermissionError as exc:
-            print(f"Process workers unavailable ({exc}); falling back to serial calibration.")
-            for path in files:
-                rows.append(_calibrate_day_worker((path, args)))
+            progress(f"Process workers unavailable ({exc}); falling back to serial calibration.")
+            for idx, path in enumerate(files, start=1):
+                label = input_label(path)
+                started_at = time.perf_counter()
+                progress(f"[calibration] {idx}/{total} start {label}")
+                row = _calibrate_day_worker((path, args))
+                rows.append(row)
+                progress(
+                    "[calibration] "
+                    f"{idx}/{total} complete {row.get('date', label)} "
+                    f"sigma={row['sigma']:.6g} A={row['A']:.6g} k={row['k']:.6g} "
+                    f"({elapsed_seconds(started_at)})"
+                )
     else:
-        for path in files:
-            rows.append(_calibrate_day_worker((path, args)))
+        for idx, path in enumerate(files, start=1):
+            label = input_label(path)
+            started_at = time.perf_counter()
+            progress(f"[calibration] {idx}/{total} start {label}")
+            row = _calibrate_day_worker((path, args))
+            rows.append(row)
+            progress(
+                "[calibration] "
+                f"{idx}/{total} complete {row.get('date', label)} "
+                f"sigma={row['sigma']:.6g} A={row['A']:.6g} k={row['k']:.6g} "
+                f"({elapsed_seconds(started_at)})"
+            )
 
     sigma = finite_median(row["sigma"] for row in rows)
     arrival_a = finite_median(row["A"] for row in rows)
@@ -844,18 +899,52 @@ def evaluate_files(
 ) -> pd.DataFrame:
     rows: list[dict[str, Any]] = []
     payloads = [(item, split, gamma, calibration, args, strategies, manifest) for item in files]
+    total = len(payloads)
+    strategy_label = ",".join(strategies)
     if args.workers > 1 and len(files) > 1:
         try:
+            phase_started_at = time.perf_counter()
             with ProcessPoolExecutor(max_workers=args.workers) as pool:
-                for part in pool.map(_evaluate_file_worker, payloads):
-                    rows.extend(part)
+                futures = {
+                    pool.submit(_evaluate_file_worker, payload): (idx, input_label(payload[0]))
+                    for idx, payload in enumerate(payloads)
+                }
+                results: list[list[dict[str, Any]] | None] = [None] * total
+                for done, future in enumerate(as_completed(futures), start=1):
+                    idx, label = futures[future]
+                    part = future.result()
+                    results[idx] = part
+                    progress(
+                        f"[{split}] {done}/{total} complete {label} "
+                        f"gamma={gamma:.6g} strategies={strategy_label} "
+                        f"episodes={len(part)} ({elapsed_seconds(phase_started_at)} elapsed)"
+                    )
+                for part in results:
+                    if part is not None:
+                        rows.extend(part)
         except PermissionError as exc:
-            print(f"Process workers unavailable ({exc}); falling back to serial {split} evaluation.")
-            for payload in payloads:
-                rows.extend(_evaluate_file_worker(payload))
+            progress(f"Process workers unavailable ({exc}); falling back to serial {split} evaluation.")
+            for idx, payload in enumerate(payloads, start=1):
+                label = input_label(payload[0])
+                started_at = time.perf_counter()
+                progress(f"[{split}] {idx}/{total} start {label} gamma={gamma:.6g} strategies={strategy_label}")
+                part = _evaluate_file_worker(payload)
+                rows.extend(part)
+                progress(
+                    f"[{split}] {idx}/{total} complete {label} gamma={gamma:.6g} "
+                    f"episodes={len(part)} ({elapsed_seconds(started_at)})"
+                )
     else:
-        for payload in payloads:
-            rows.extend(_evaluate_file_worker(payload))
+        for idx, payload in enumerate(payloads, start=1):
+            label = input_label(payload[0])
+            started_at = time.perf_counter()
+            progress(f"[{split}] {idx}/{total} start {label} gamma={gamma:.6g} strategies={strategy_label}")
+            part = _evaluate_file_worker(payload)
+            rows.extend(part)
+            progress(
+                f"[{split}] {idx}/{total} complete {label} gamma={gamma:.6g} "
+                f"episodes={len(part)} ({elapsed_seconds(started_at)})"
+            )
     return pd.DataFrame(rows)
 
 
@@ -868,7 +957,9 @@ def build_gamma_selection(
 ) -> pd.DataFrame:
     rows: list[dict[str, Any]] = []
     threshold = args.q_ref * args.q_ref
-    for label, gamma in gamma_grid:
+    for gamma_idx, (label, gamma) in enumerate(gamma_grid, start=1):
+        gamma_started_at = time.perf_counter()
+        progress(f"[validation] gamma {gamma_idx}/{len(gamma_grid)} start {label}={gamma:.6g}")
         metrics = evaluate_files(
             validation_files,
             split="validation",
@@ -883,6 +974,11 @@ def build_gamma_selection(
         mean_final_pv = float(metrics["final_pv"].mean())
         mean_avg_q2 = float(metrics["avg_q2"].mean())
         feasible = mean_avg_q2 <= threshold
+        progress(
+            f"[validation] gamma {gamma_idx}/{len(gamma_grid)} complete {label}={gamma:.6g} "
+            f"mean_final_pv={mean_final_pv:.6g} mean_avg_q2={mean_avg_q2:.6g} "
+            f"feasible={feasible} ({elapsed_seconds(gamma_started_at)})"
+        )
         rows.append(
             {
                 "gamma_label": label,
@@ -1381,13 +1477,13 @@ def main() -> None:
     args.baselines_output_dir.mkdir(parents=True, exist_ok=True)
 
     if args.resume_from_calibration is not None:
-        print(f"Loading AS calibration from {args.resume_from_calibration} ...")
+        progress(f"Loading AS calibration from {args.resume_from_calibration} ...")
         calibration = calibration_from_json(args.resume_from_calibration)
         validate_resume_calibration(calibration, args)
         args.train_start_actual = calibration.train_start
         args.train_end_actual = calibration.train_end
     else:
-        print(
+        progress(
             "Calibrating AS baseline on training data "
             f"({args.resolved_data_format}, {len(train_files)} days, "
             f"{args.train_start_actual} to {args.train_end_actual}) ..."
@@ -1395,7 +1491,7 @@ def main() -> None:
         calibration = calibrate_training(train_files, args)
     write_json(args.output_dir / "as_calibration.json", asdict(calibration))
 
-    print(
+    progress(
         "Selecting gamma on validation data "
         f"({len(validation_files)} days, {args.validation_start_actual} to {args.validation_end_actual}) ..."
     )
@@ -1408,7 +1504,7 @@ def main() -> None:
     if args.include_symmetric:
         test_strategies = ("as_classical_control", "symmetric_mm", "no_trade")
 
-    print(
+    progress(
         "Evaluating selected AS classical-control and no-trade baselines on test data "
         f"({len(test_files)} days, {args.test_start_actual} to {args.test_end_actual}) ..."
     )
@@ -1452,7 +1548,7 @@ def main() -> None:
     if args.debug_plots:
         render_debug_plots(test_metrics, args.debug_dir)
 
-    print(f"AS baseline complete. Outputs written to {args.output_dir}")
+    progress(f"AS baseline complete. Outputs written to {args.output_dir}")
 
 
 if __name__ == "__main__":

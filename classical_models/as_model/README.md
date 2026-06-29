@@ -1,6 +1,6 @@
 # LOBSTER AS Classical-Control Baseline
 
-This folder is a portable copy of the code needed to run the cleaned
+This subfolder contains the code needed to run the cleaned
 Avellaneda-Stoikov classical-control baseline on AMZN LOBSTER 10-level data.
 The main pipeline calibrates `sigma`, `A`, and `k` on train data, selects one
 `gamma*` on validation data, and evaluates the fixed finite-horizon AS policy
@@ -28,35 +28,33 @@ The bundle does not include the real LOBSTER data. Copy your CSV folders into
 
 ## Setup
 
-With pip:
+AS shares the parent classical-model environment with the AC benchmark. From the
+repository root:
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+cd classical_models
+uv sync --extra dev
 ```
 
-With uv:
-
-```bash
-uv sync
-```
+This keeps classical-model dependencies out of the root JaxMARL environment.
 
 ## Run
 
+From `classical_models/`:
+
 ```bash
-python script/run_as_baseline.py \
+uv run python as_model/script/run_as_baseline.py \
   --data-format lobster \
-  --data-dir data/lobster_amzn_10 \
-  --cache-dir data/cache/as_lobster_10 \
+  --data-dir ../data/lobster_amzn_10 \
+  --cache-dir ../data/cache/as_lobster_10 \
   --as-horizon-mode finite_episode \
   --workers 32
 ```
 
-Or:
+From the repository root:
 
 ```bash
-bash run_lobster_as.sh
+bash classical_models/as_model/run_lobster_as.sh
 ```
 
 Outputs are written to:
@@ -76,8 +74,8 @@ needed as an auxiliary benchmark.
 
 ## Smoke Test
 
-The tests generate tiny synthetic fixtures to verify the code runs:
+From `classical_models/`:
 
 ```bash
-python -m unittest discover -s tests
+uv run python -m unittest discover -s as_model/tests
 ```

@@ -16,10 +16,19 @@ fi
 source "${EXP_FILE}"
 
 load_snellius_python
-source "${VENV_DIR}/bin/activate"
+CLASSICAL_MODELS_ROOT="${CLASSICAL_MODELS_ROOT:-${REPO_ROOT}/classical_models}"
+CLASSICAL_VENV_DIR="${CLASSICAL_VENV_DIR:-${CLASSICAL_MODELS_ROOT}/.venv}"
+AS_MODEL_DIR="${CLASSICAL_MODELS_ROOT}/as_model"
+
+if [[ ! -d "${CLASSICAL_VENV_DIR}" ]]; then
+  echo "ERROR: classical model venv not found: ${CLASSICAL_VENV_DIR}" >&2
+  echo "Create it with: cd ${CLASSICAL_MODELS_ROOT} && uv sync --extra dev" >&2
+  exit 1
+fi
+source "${CLASSICAL_VENV_DIR}/bin/activate"
 
 export PYTHONNOUSERSITE=1
-export PYTHONPATH="${REPO_ROOT}:${REPO_ROOT}/as_model:${PYTHONPATH:-}"
+export PYTHONPATH="${AS_MODEL_DIR}:${PYTHONPATH:-}"
 export PYTHONUNBUFFERED=1
 export MPLBACKEND=Agg
 
@@ -77,6 +86,8 @@ python -m pip freeze > "${RUN_DIR}/pip_freeze.txt" || true
   echo "NODE=$(hostname)"
   echo "STARTED=$(date -Is)"
   echo "REPO_ROOT=${REPO_ROOT}"
+  echo "CLASSICAL_MODELS_ROOT=${CLASSICAL_MODELS_ROOT}"
+  echo "CLASSICAL_VENV_DIR=${CLASSICAL_VENV_DIR}"
   echo "DATA_ROOT=${DATA_ROOT}"
   echo "AS_DATA_FORMAT=${AS_DATA_FORMAT}"
   echo "AS_DATA_DIR=${AS_DATA_DIR}"
@@ -136,11 +147,11 @@ Run dir:             ${RUN_DIR}
 INFO
 
 if [[ "${AS_RUN_TESTS:-false}" == "true" ]]; then
-  run_step python -m unittest discover -s as_model/tests
+  run_step python -m unittest discover -s "${AS_MODEL_DIR}/tests"
 fi
 
 CMD=(
-  python -u as_model/script/run_as_baseline.py
+  python -u "${AS_MODEL_DIR}/script/run_as_baseline.py"
   --data-format "${AS_DATA_FORMAT}"
   --data-dir "${AS_DATA_DIR}"
   --cache-dir "${AS_CACHE_DIR}"

@@ -1,0 +1,31 @@
+# Reference thesis AC benchmark configuration.
+# Use this as a human-readable checklist; the CLI accepts the same values as arguments.
+
+data:
+  train_snapshots: data/amzn_train.parquet
+  valid_snapshots: data/amzn_valid.parquet
+  test_snapshots: data/amzn_test.parquet
+  depth_levels: 10
+
+execution_task:
+  task_size: 600
+  episode_length: 64
+  messages_per_step: 100        # set to 1 if file is already one row per RL step
+  episode_start_frequency_steps: 64
+  lot_size: 10
+  tick_size: 0.01
+  directions: random
+  random_seed: 7
+
+ac_policy:
+  kappa_T_grid: [0, 0.5, 1, 2, 4]
+
+calibration:
+  q_grid: [10, 20, 50, 100, 200, 400, 600]
+  max_rows: 250000
+  gamma_ac: 0.0
+
+outputs:
+  calibration_dir: outputs/ac/train_calibration
+  validation_dir: outputs/ac/validation_sweep
+  test_dir: outputs/ac/test_benchmark

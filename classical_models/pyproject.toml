@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "classical-models"
+version = "0.1.0"
+description = "Isolated classical AC and AS baselines for JaxMARL-HFT comparisons."
+requires-python = ">=3.10"
+dependencies = [
+    "matplotlib>=3.8",
+    "numpy>=1.26",
+    "pandas>=2.2",
+    "pyarrow>=10.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+]
+
+[project.scripts]
+ac-benchmark = "ac_benchmark.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "ac_model/src"}
+
+[tool.setuptools.packages.find]
+where = ["ac_model/src"]

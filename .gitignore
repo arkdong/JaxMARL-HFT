@@ -116,3 +116,5 @@ debug_output/*
 jax_trace/*
 .ipython/*
 baseline_sweep_results/*
+.pytest_cache/
+*.egg-info/

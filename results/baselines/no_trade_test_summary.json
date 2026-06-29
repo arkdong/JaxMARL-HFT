@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "calibration": {
+      "A": 0.045983787841217365,
+      "arrival_fit_method": "log_linear_lobster_level",
+      "data_format": "lobster",
+      "decision_interval_seconds": 0.25,
+      "fill_model": "lobster_level",
+      "gamma_seed": 0.037446853339608885,
+      "horizon_mode": "finite_episode",
+      "horizon_seconds": 16.0,
+      "inventory_limit": 200,
+      "k": 29.656615220296274,
+      "lobster_levels": 10,
+      "num_train_days": 74,
+      "order_size": 10,
+      "sigma": 0.020426894605204596,
+      "sigma_method": "winsorized_midprice_diff",
+      "test_end": "2026-05-11",
+      "test_start": "2026-04-08",
+      "tick_size": 0.01,
+      "train_end": "2026-03-02",
+      "train_start": "2025-11-12",
+      "validation_end": "2026-04-07",
+      "validation_start": "2026-03-03"
+    },
+    "selected_gamma": 0.037446853339608885
+  },
+  "strategies": {
+    "no_trade": {
+      "episodes": 35088,
+      "max_abs_inventory": 0.0,
+      "mean_avg_q2": 0.0,
+      "mean_fill_rate": 0.0,
+      "mean_final_pv": 0.0,
+      "mean_no_trade_rate": 1.0,
+      "mean_order_submission_rate": 0.0,
+      "std_final_pv": 0.0
+    }
+  }
+}
