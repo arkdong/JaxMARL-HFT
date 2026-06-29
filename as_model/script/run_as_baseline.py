@@ -9,7 +9,7 @@ import struct
 import sys
 import zlib
 from concurrent.futures import ProcessPoolExecutor
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, fields
 from pathlib import Path
 from typing import Any, Iterable, Sequence, Union
 
@@ -37,6 +37,7 @@ from avellaneda_stoikov_amzn import (  # noqa: E402
 from lobster_as import (  # noqa: E402
     DEFAULT_LOBSTER_LEVELS,
     LobsterDayFiles,
+    LobsterTradeFlow,
     calibrate_lobster_arrival_rates,
     discover_lobster_pairs,
     is_lobster_dir,
@@ -501,6 +502,60 @@ def make_params(gamma: float, calibration: CalibrationResult, args: argparse.Nam
     )
 
 
+def calibration_from_json(path: Path) -> CalibrationResult:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    names = {field.name for field in fields(CalibrationResult)}
+    missing = sorted(names - set(payload))
+    if missing:
+        raise ValueError(f"Calibration file missing fields: {missing}")
+    return CalibrationResult(**{name: payload[name] for name in names})
+
+
+def _close_float(left: float, right: float, *, tol: float = 1e-12) -> bool:
+    return math.isclose(float(left), float(right), rel_tol=tol, abs_tol=tol)
+
+
+def validate_resume_calibration(calibration: CalibrationResult, args: argparse.Namespace) -> None:
+    checks: list[tuple[str, Any, Any, bool]] = [
+        ("data_format", calibration.data_format, args.resolved_data_format, calibration.data_format == args.resolved_data_format),
+        ("tick_size", calibration.tick_size, args.tick_size, _close_float(calibration.tick_size, args.tick_size)),
+        (
+            "decision_interval_seconds",
+            calibration.decision_interval_seconds,
+            args.dt_seconds,
+            _close_float(calibration.decision_interval_seconds, args.dt_seconds),
+        ),
+        ("order_size", calibration.order_size, args.order_size, calibration.order_size == args.order_size),
+        (
+            "inventory_limit",
+            calibration.inventory_limit,
+            args.inventory_limit,
+            calibration.inventory_limit == args.inventory_limit,
+        ),
+        ("horizon_mode", calibration.horizon_mode, args.as_horizon_mode, calibration.horizon_mode == args.as_horizon_mode),
+        (
+            "horizon_seconds",
+            calibration.horizon_seconds,
+            args.horizon_seconds,
+            _close_float(calibration.horizon_seconds, args.horizon_seconds),
+        ),
+        ("fill_model", calibration.fill_model, args.fill_model, calibration.fill_model == args.fill_model),
+        (
+            "lobster_levels",
+            calibration.lobster_levels,
+            args.lobster_levels if args.resolved_data_format == "lobster" else None,
+            calibration.lobster_levels == (args.lobster_levels if args.resolved_data_format == "lobster" else None),
+        ),
+    ]
+    mismatches = [
+        f"{name}: calibration={stored!r}, current={current!r}"
+        for name, stored, current, ok in checks
+        if not ok
+    ]
+    if mismatches:
+        raise ValueError("--resume-from-calibration does not match current run config: " + "; ".join(mismatches))
+
+
 def load_episode_manifest(path: Path | None) -> pd.DataFrame | None:
     if path is None:
         return None
@@ -578,6 +633,7 @@ def summarize_replay_episode(
 
     return {
         "strategy": strategy,
+        "baseline_family": "classical_control",
         "split": split,
         "date": date,
         "episode_id": episode_id,
@@ -620,10 +676,9 @@ def summarize_no_trade_episode(
     gamma: float,
     args: argparse.Namespace,
 ) -> dict[str, Any]:
-    mid = bbo_slice["mid"].to_numpy(dtype=float)
-    zero = np.zeros(len(bbo_slice), dtype=float)
     return {
         "strategy": "no_trade",
+        "baseline_family": "passive_control",
         "split": split,
         "date": date,
         "episode_id": episode_id,
@@ -657,6 +712,56 @@ def summarize_no_trade_episode(
     }
 
 
+def replay_strategy_for_label(strategy: str) -> str:
+    if strategy == "as_classical_control":
+        return "inventory"
+    if strategy == "symmetric_mm":
+        return "symmetric"
+    raise ValueError(f"Unsupported replay strategy label: {strategy!r}")
+
+
+def slice_lobster_trade_flow(trade_flow: LobsterTradeFlow, start: int, end: int) -> LobsterTradeFlow:
+    return LobsterTradeFlow(
+        buy_aggressor=trade_flow.buy_aggressor[start:end],
+        sell_aggressor=trade_flow.sell_aggressor[start:end],
+    )
+
+
+def simulate_episode_replay(
+    day: DayData,
+    *,
+    start: int,
+    end: int,
+    params: ASParams,
+    args: argparse.Namespace,
+    replay_strategy: str,
+) -> pd.DataFrame:
+    """Replay one episode with local cash, inventory, and AS elapsed time."""
+    bbo_slice = day.bbo.iloc[start:end]
+    if bbo_slice.empty:
+        return pd.DataFrame()
+
+    if args.fill_model == "lobster_level":
+        flow_slice = slice_lobster_trade_flow(day.trade_flow, start, end)
+        return simulate_lobster_replay(
+            bbo_slice,
+            flow_slice,
+            params,
+            strategy=replay_strategy,
+        )
+
+    extrema_slice = day.extrema.iloc[start:end]
+    return simulate_replay(
+        bbo_slice,
+        extrema_slice,
+        params,
+        strategy=replay_strategy,
+        fill_model=args.fill_model,
+        mbo=day.mbo,
+        trade_flow=None,
+    )
+
+
 def _evaluate_file(
     item: BaselineInput,
     *,
@@ -671,47 +776,20 @@ def _evaluate_file(
     params = make_params(gamma, calibration, args)
     day = prepare_day(item, args)
     slices = episode_slices(day, args, manifest)
-    replay_by_strategy: dict[str, pd.DataFrame] = {}
-    if "as_inventory" in strategies:
-        if args.fill_model == "lobster_level":
-            replay_by_strategy["as_inventory"] = simulate_lobster_replay(
-                day.bbo,
-                day.trade_flow,
-                params,
-                strategy="inventory",
-            )
-        else:
-            replay_by_strategy["as_inventory"] = simulate_replay(
-                day.bbo,
-                day.extrema,
-                params,
-                strategy="inventory",
-                fill_model=args.fill_model,
-                mbo=day.mbo,
-                trade_flow=day.trade_flow,
-            )
-    if "symmetric_mm" in strategies:
-        if args.fill_model == "lobster_level":
-            replay_by_strategy["symmetric_mm"] = simulate_lobster_replay(
-                day.bbo,
-                day.trade_flow,
-                params,
-                strategy="symmetric",
-            )
-        else:
-            replay_by_strategy["symmetric_mm"] = simulate_replay(
-                day.bbo,
-                day.extrema,
-                params,
-                strategy="symmetric",
-                fill_model=args.fill_model,
-                mbo=day.mbo,
-                trade_flow=day.trade_flow,
-            )
 
     for episode_id, start, end in slices:
-        for strategy, replay in replay_by_strategy.items():
-            episode = replay.iloc[start:end]
+        for strategy in strategies:
+            if strategy == "no_trade":
+                continue
+            replay_strategy = replay_strategy_for_label(strategy)
+            episode = simulate_episode_replay(
+                day,
+                start=start,
+                end=end,
+                params=params,
+                args=args,
+                replay_strategy=replay_strategy,
+            )
             if not episode.empty:
                 rows.append(
                     summarize_replay_episode(
@@ -797,7 +875,7 @@ def build_gamma_selection(
             gamma=gamma,
             calibration=calibration,
             args=args,
-            strategies=("as_inventory",),
+            strategies=("as_classical_control",),
             manifest=manifest,
         )
         if metrics.empty:
@@ -876,6 +954,46 @@ def build_summary(metrics: pd.DataFrame, calibration: CalibrationResult, selecte
             "mean_no_trade_rate": float(part["no_trade_rate"].mean()),
         }
     return summary
+
+
+def build_run_manifest(
+    args: argparse.Namespace,
+    *,
+    calibration: CalibrationResult,
+    selected_gamma: float,
+    gamma_selection: pd.DataFrame,
+    test_strategies: tuple[str, ...],
+) -> dict[str, Any]:
+    selected = gamma_selection[gamma_selection["selected"]].iloc[0].to_dict()
+    return {
+        "baseline_family": "classical_control",
+        "selected_gamma": float(selected_gamma),
+        "selected_gamma_label": str(selected["gamma_label"]),
+        "calibration_source": "resumed" if args.resume_from_calibration is not None else "fresh",
+        "resume_from_calibration": None if args.resume_from_calibration is None else str(args.resume_from_calibration),
+        "splits": {
+            "train": {"start": args.train_start_actual, "end": args.train_end_actual},
+            "validation": {"start": args.validation_start_actual, "end": args.validation_end_actual},
+            "test": {"start": args.test_start_actual, "end": args.test_end_actual},
+        },
+        "config": {
+            "data_format": args.resolved_data_format,
+            "fill_model": args.fill_model,
+            "lobster_levels": args.lobster_levels if args.resolved_data_format == "lobster" else None,
+            "decision_interval_ms": args.decision_interval_ms,
+            "episode_steps": args.episode_steps,
+            "order_size": args.order_size,
+            "inventory_limit": args.inventory_limit,
+            "tick_size": args.tick_size,
+            "horizon_mode": args.as_horizon_mode,
+            "horizon_seconds": args.horizon_seconds,
+            "q_ref": args.q_ref,
+            "target_skew": args.target_skew,
+            "test_strategies": list(test_strategies),
+            "include_symmetric": bool(args.include_symmetric),
+        },
+        "calibration": {k: v for k, v in asdict(calibration).items() if k != "daily_calibrations"},
+    }
 
 
 def write_json(path: Path, payload: Any) -> None:
@@ -1113,6 +1231,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--baselines-output-dir", type=Path, default=Path("results/baselines"))
     parser.add_argument("--debug-dir", type=Path, default=Path("debug/as"))
     parser.add_argument("--cache-dir", type=Path, default=None, help="Optional compact LOBSTER cache directory, e.g. data/cache/as_lobster_10.")
+    parser.add_argument("--resume-from-calibration", type=Path, default=None, help="Skip train calibration and reuse an existing as_calibration.json.")
     parser.add_argument("--workers", type=int, default=1, help="Reserved day-level worker count for batch runs.")
     parser.add_argument("--lobster-levels", type=int, default=DEFAULT_LOBSTER_LEVELS)
     parser.add_argument("--train-start", default=None)
@@ -1137,7 +1256,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--decision-interval-ms", type=int, default=250)
     parser.add_argument("--episode-steps", type=int, default=64)
     parser.add_argument("--tick-size", type=float, default=0.01)
-    parser.add_argument("--as-horizon-mode", choices=["rolling", "finite_episode"], default="rolling")
+    parser.add_argument("--as-horizon-mode", choices=["rolling", "finite_episode"], default="finite_episode")
     parser.add_argument("--as-horizon-seconds", type=float, default=None)
     parser.add_argument("--target-skew", type=float, default=0.05)
     parser.add_argument("--q-ref", type=float, default=20.0)
@@ -1145,6 +1264,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--delta-end-ticks", type=int, default=20)
     parser.add_argument("--gamma-values", default=None)
     parser.add_argument("--episode-starts-csv", type=Path, default=None)
+    parser.add_argument("--include-symmetric", action="store_true", help="Include the old symmetric market-maker benchmark row.")
     parser.add_argument("--no-plots", action="store_true")
     parser.add_argument("--debug-plots", action="store_true")
     args = parser.parse_args()
@@ -1152,6 +1272,8 @@ def parse_args() -> argparse.Namespace:
     args.fill_model = canonical_fill_model(args.fill_model)
     if args.sample_data is not None and args.sample_data_dir is not None:
         raise SystemExit("Use only one of --sample-data or --sample-data-dir.")
+    if args.resume_from_calibration is not None and not args.resume_from_calibration.exists():
+        raise SystemExit(f"Calibration file not found: {args.resume_from_calibration}")
     args.dt_seconds = args.decision_interval_ms / 1000.0
     args.horizon_seconds = (
         float(args.as_horizon_seconds)
@@ -1186,16 +1308,18 @@ def main() -> None:
     if args.sample_data_dir is not None and not args.sample_data_dir.is_dir():
         raise SystemExit(f"Sample data directory not found: {args.sample_data_dir}")
 
+    train_files: Sequence[BaselineInput] = []
     if args.resolved_data_format == "lobster":
         lobster_dir = args.sample_data_dir or args.data_dir
-        train_files: Sequence[BaselineInput] = select_lobster_split(
-            data_dir=lobster_dir,
-            sample_data_dir=args.sample_data_dir,
-            levels=args.lobster_levels,
-            start=args.train_start,
-            end=args.train_end,
-            split_name="train",
-        )
+        if args.resume_from_calibration is None:
+            train_files = select_lobster_split(
+                data_dir=lobster_dir,
+                sample_data_dir=args.sample_data_dir,
+                levels=args.lobster_levels,
+                start=args.train_start,
+                end=args.train_end,
+                split_name="train",
+            )
         validation_files: Sequence[BaselineInput] = select_lobster_split(
             data_dir=lobster_dir,
             sample_data_dir=args.sample_data_dir,
@@ -1216,16 +1340,17 @@ def main() -> None:
         files = [] if args.sample_data is not None else list_input_files(args.data_dir)
         if args.sample_data is None and not files:
             raise SystemExit(f"No input files found under {args.data_dir}")
-        train_files = select_split_files(
-            data_dir=args.data_dir,
-            files=files,
-            sample_data=args.sample_data,
-            start=args.train_start,
-            end=args.train_end,
-            start_index=args.train_start_index,
-            end_index=args.train_end_index,
-            split_name="train",
-        )
+        if args.resume_from_calibration is None:
+            train_files = select_split_files(
+                data_dir=args.data_dir,
+                files=files,
+                sample_data=args.sample_data,
+                start=args.train_start,
+                end=args.train_end,
+                start_index=args.train_start_index,
+                end_index=args.train_end_index,
+                split_name="train",
+            )
         validation_files = select_split_files(
             data_dir=args.data_dir,
             files=files,
@@ -1252,14 +1377,22 @@ def main() -> None:
     args.test_start_actual, args.test_end_actual = input_date_range(test_files)
     manifest = load_episode_manifest(args.episode_starts_csv)
 
-    print(
-        "Calibrating AS baseline on training data "
-        f"({args.resolved_data_format}, {len(train_files)} days, "
-        f"{args.train_start_actual} to {args.train_end_actual}) ..."
-    )
-    calibration = calibrate_training(train_files, args)
     args.output_dir.mkdir(parents=True, exist_ok=True)
     args.baselines_output_dir.mkdir(parents=True, exist_ok=True)
+
+    if args.resume_from_calibration is not None:
+        print(f"Loading AS calibration from {args.resume_from_calibration} ...")
+        calibration = calibration_from_json(args.resume_from_calibration)
+        validate_resume_calibration(calibration, args)
+        args.train_start_actual = calibration.train_start
+        args.train_end_actual = calibration.train_end
+    else:
+        print(
+            "Calibrating AS baseline on training data "
+            f"({args.resolved_data_format}, {len(train_files)} days, "
+            f"{args.train_start_actual} to {args.train_end_actual}) ..."
+        )
+        calibration = calibrate_training(train_files, args)
     write_json(args.output_dir / "as_calibration.json", asdict(calibration))
 
     print(
@@ -1271,8 +1404,12 @@ def main() -> None:
     gamma_selection.to_csv(args.output_dir / "as_gamma_selection.csv", index=False)
     selected_gamma = float(gamma_selection.loc[gamma_selection["selected"], "gamma"].iloc[0])
 
+    test_strategies: tuple[str, ...] = ("as_classical_control", "no_trade")
+    if args.include_symmetric:
+        test_strategies = ("as_classical_control", "symmetric_mm", "no_trade")
+
     print(
-        "Evaluating selected AS, symmetric MM, and no-trade baselines on test data "
+        "Evaluating selected AS classical-control and no-trade baselines on test data "
         f"({len(test_files)} days, {args.test_start_actual} to {args.test_end_actual}) ..."
     )
     test_metrics = evaluate_files(
@@ -1281,15 +1418,24 @@ def main() -> None:
         gamma=selected_gamma,
         calibration=calibration,
         args=args,
-        strategies=("as_inventory", "symmetric_mm", "no_trade"),
+        strategies=test_strategies,
         manifest=manifest,
     )
     daily = aggregate_daily_metrics(test_metrics)
     summary = build_summary(test_metrics, calibration, selected_gamma)
+    manifest_payload = build_run_manifest(
+        args,
+        calibration=calibration,
+        selected_gamma=selected_gamma,
+        gamma_selection=gamma_selection,
+        test_strategies=test_strategies,
+    )
 
+    test_metrics.to_csv(args.output_dir / "as_test_metrics.csv", index=False)
     daily.to_csv(args.output_dir / "as_test_daily_metrics.csv", index=False)
     write_json(args.output_dir / "as_test_summary.json", summary)
     test_metrics.to_csv(args.output_dir / "as_for_rl_comparison.csv", index=False)
+    write_json(args.output_dir / "as_run_manifest.json", manifest_payload)
 
     no_trade = test_metrics[test_metrics["strategy"].eq("no_trade")].reset_index(drop=True)
     no_trade.to_csv(args.baselines_output_dir / "no_trade_for_rl_comparison.csv", index=False)
