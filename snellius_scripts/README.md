@@ -13,8 +13,12 @@ Run the AS classical-control baseline:
 
 ```bash
 cd /home/adong/JaxMARL-HFT
+cd classical_models && uv sync --extra dev && cd ..
 bash snellius_scripts/submit_as_baseline.sh snellius_scripts/experiments/as_lobster_baseline.env
 ```
+
+The AS baseline activates `classical_models/.venv`, not the root JaxMARL
+environment.
 
 Run the same AS job interactively with `srun`:
 

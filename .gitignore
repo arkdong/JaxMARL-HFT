@@ -1,4 +1,4 @@
-**.csv
+# **.csv
 .idea/**/
 **.pyc
 __pycache__/
@@ -46,7 +46,7 @@ checkpoints/
 slurm_logs/**
 
 
-*.png
+# *.png
 *.npy
 *.nfs*
 
@@ -116,3 +116,5 @@ debug_output/*
 jax_trace/*
 .ipython/*
 baseline_sweep_results/*
+.pytest_cache/
+*.egg-info/

@@ -1,0 +1,69 @@
+{
+  "baseline": "almgren_chriss",
+  "baseline_family": "classical_control",
+  "cache_dir": "data/cache/ac_lobster_10",
+  "calibration": {
+    "eta_ac": 1.6527777777746165e-05,
+    "gamma_ac": 0.0,
+    "half_spread": 0.010000000000005116,
+    "n_obs": 144022665,
+    "notes": "Median daily AC calibration from LOBSTER train split; gamma_ac kept at zero.",
+    "q_grid": [
+      10,
+      20,
+      50,
+      100,
+      200,
+      400,
+      600
+    ],
+    "sigma_step": 0.022982669025401636
+  },
+  "calibration_engine": "fast",
+  "data_dir": "data/rawLOBSTER/AMZN/lobster_amzn_10",
+  "data_format": "lobster",
+  "episode": {
+    "directions": "random",
+    "episode_length": 64,
+    "episode_start_frequency_steps": 64,
+    "lot_size": 10,
+    "messages_per_step": 100,
+    "random_seed": 7,
+    "task_size": 600,
+    "tick_size": 0.01
+  },
+  "evaluation_engine": "auto",
+  "kappa_grid": [
+    0.0,
+    0.5,
+    1.0,
+    2.0,
+    4.0
+  ],
+  "lobster_levels": 10,
+  "max_episodes": null,
+  "max_rows_calibration": 250000,
+  "price_scale": 10000.0,
+  "save_fills": false,
+  "selected_kappa_T": 0.0,
+  "splits": {
+    "test": {
+      "days": 24,
+      "end": "2026-05-11",
+      "start": "2026-04-08"
+    },
+    "train": {
+      "days": 74,
+      "end": "2026-03-02",
+      "start": "2025-11-12"
+    },
+    "validation": {
+      "days": 25,
+      "end": "2026-04-07",
+      "start": "2026-03-03"
+    }
+  },
+  "test_kappa_grid": [
+    0.0
+  ]
+}
