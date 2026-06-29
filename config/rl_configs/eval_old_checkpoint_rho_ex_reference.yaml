@@ -6,6 +6,7 @@
 "NUM_ENVS": 4096
 "NUM_STEPS": 64
 "NUM_STEPS_EVAL": 64
+"NUM_UPDATES": 1
 "GRU_HIDDEN_DIM": 256
 "FC_DIM_SIZE": 256
 "TOTAL_TIMESTEPS": 1
@@ -31,15 +32,19 @@
 "PROJECT": "Thesis"
 "WANDB_MODE": "disabled"
 
-# This script uses TimePeriod directly. Keep both on validation for clarity.
+# The generic Snellius eval job maps PERIOD into both EvalTimePeriod and
+# TimePeriod for this script.
 "CALC_EVAL": false
-"TimePeriod": "validation"
-"EvalTimePeriod": "validation"
+"TimePeriod": "val"
+"EvalTimePeriod": "val"
 "Calculate Baseline": false
 "Timing": false
 
 # Set this to the exact old run folder printed by training:
 # Saving checkpoints to directory: /gpfs/home4/adong/JaxMARL-HFT/checkpoints/MARLCheckpoints/Thesis/<RUN_NAME_OR_ID>
+"RESTORE_PROJECT": "Thesis-mm-risk-neutral"
+"RESTORE_RUN": "colorful-sweep-1"
+"RESTORE_STEP": "latest"
 "CHECKPOINT_DIR": "/gpfs/home4/adong/JaxMARL-HFT/checkpoints/MARLCheckpoints/Thesis-mm-risk-neutral/colorful-sweep-1"
 "CHECKPOINT_STEP": -1   # -1 = latest available checkpoint step
 "OUTPUT_DIR": "results/rho_ex_reference_validation_old_checkpoint"

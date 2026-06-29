@@ -15,7 +15,7 @@
     "alphatradePath": "/gpfs/home4/adong/JaxMARL-HFT",
     "dataPath": "/gpfs/home4/adong/JaxMARL-HFT/data",
     "stock": "AMZN",
-    "timePeriod": "validation",
+    "timePeriod": "val",
     "n_data_msg_per_step": 100,
     "window_selector": -1,
     "ep_type": "fixed_steps",

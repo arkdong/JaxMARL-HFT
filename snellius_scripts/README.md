@@ -9,6 +9,13 @@ cd /home/adong/JaxMARL-HFT
 bash snellius_scripts/submit_train.sh snellius_scripts/experiments/h100x4_4096_8388608.env
 ```
 
+Run the old-checkpoint rho_ex reference smoke eval:
+
+```bash
+cd /home/adong/JaxMARL-HFT
+bash snellius_scripts/submit_eval.sh snellius_scripts/eval/rho_ex_reference_validation_smoke.env
+```
+
 Run the AS classical-control baseline:
 
 ```bash

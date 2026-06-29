@@ -10,13 +10,8 @@
 
 set -euo pipefail
 
-REPO_DIR="${REPO_DIR:-/gpfs/home4/adong/JaxMARL-HFT}"
-cd "${REPO_DIR}"
+cd "${REPO_ROOT:-/home/adong/JaxMARL-HFT}"
 mkdir -p slurm_logs
 
-# Uncomment/adapt if your cluster needs conda/module setup:
-# source ~/.bashrc
-# conda activate jaxmarl_hft
-# module load cuda
-
-bash scripts/eval_old_checkpoint_rho_ex_reference.sh "$@"
+export EXP_FILE="${EXP_FILE:-snellius_scripts/eval/rho_ex_reference_validation_smoke.env}"
+exec bash snellius_scripts/jobs/run_eval.sbatch

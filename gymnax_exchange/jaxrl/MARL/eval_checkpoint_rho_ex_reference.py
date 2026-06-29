@@ -96,10 +96,12 @@ def _merge_hydra_and_env_config(config: Dict[str, Any]) -> Dict[str, Any]:
     merged = OmegaConf.merge(OmegaConf.create(config), OmegaConf.structured(env_config))
     out = _to_container(merged)
 
-    # Re-apply YAML values that should intentionally override env JSON fields.
-    # This mirrors the training script's later World_EnvironmentConfig(timePeriod=TimePeriod)
-    # construction and prevents the JSON's train period from leaking into validation eval.
-    out["world_config"]["timePeriod"] = str(out.get("TimePeriod", "validation"))
+    # The standard eval harness passes the held-out split as EvalTimePeriod.
+    # This evaluator builds the environment from TimePeriod, so keep them aligned.
+    eval_period = str(out.get("EvalTimePeriod", out.get("TimePeriod", "val")))
+    out["EvalTimePeriod"] = eval_period
+    out["TimePeriod"] = eval_period
+    out["world_config"]["timePeriod"] = eval_period
     return out
 
 
@@ -115,7 +117,7 @@ def _make_eval_env(config: Dict[str, Any], rng: jax.Array) -> Tuple[MARLEnv, Any
         dict_of_agents_configs=agent_configs,
         world_config=World_EnvironmentConfig(
             seed=int(config["SEED"]),
-            timePeriod=str(config.get("TimePeriod", "validation")),
+            timePeriod=str(config.get("TimePeriod", "val")),
             **world_config_kwargs,
         ),
     )

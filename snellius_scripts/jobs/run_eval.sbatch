@@ -50,6 +50,24 @@ RUN_ID="${EXP_NAME}_${SLURM_JOB_ID}"
 RUN_DIR="${RUN_ROOT}/${RUN_ID}"
 mkdir -p "${RUN_DIR}"
 
+EVAL_EXTRA_OVERRIDES=()
+if [[ "${EVAL_SCRIPT}" == "gymnax_exchange/jaxrl/MARL/eval_checkpoint_rho_ex_reference.py" ]]; then
+  RHO_EX_OUTPUT_DIR="${OUTPUT_DIR:-${RUN_DIR}/results/rho_ex_reference_validation}"
+  mkdir -p "${RHO_EX_OUTPUT_DIR}"
+
+  CHECKPOINT_STEP="${RESTORE_STEP:-latest}"
+  if [[ -z "${CHECKPOINT_STEP}" || "${CHECKPOINT_STEP}" == "latest" || "${CHECKPOINT_STEP}" == "none" ]]; then
+    CHECKPOINT_STEP="-1"
+  fi
+
+  EVAL_EXTRA_OVERRIDES=(
+    TimePeriod="${PERIOD}"
+    CHECKPOINT_DIR="${CHECKPOINT_DIR}"
+    CHECKPOINT_STEP="${CHECKPOINT_STEP}"
+    OUTPUT_DIR="${RHO_EX_OUTPUT_DIR}"
+  )
+fi
+
 # Reproducibility snapshot
 cp "${EXP_FILE}" "${RUN_DIR}/experiment.env"
 git rev-parse HEAD > "${RUN_DIR}/git_commit.txt" 2>/dev/null || true
@@ -66,6 +84,10 @@ python -m pip freeze > "${RUN_DIR}/pip_freeze.txt" || true
   echo "LOBSTER_DIR=${LOBSTER_DIR}"
   echo "CHECKPOINT_DIR=${CHECKPOINT_DIR}"
   echo "RESTORE_STEP=${RESTORE_STEP:-latest}"
+  if [[ "${#EVAL_EXTRA_OVERRIDES[@]}" -gt 0 ]]; then
+    printf 'EVAL_EXTRA_OVERRIDES=%q ' "${EVAL_EXTRA_OVERRIDES[@]}"
+    printf '\n'
+  fi
   echo "EXP_FILE=${EXP_FILE}"
   echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-not set}"
   echo "SLURM_GPUS=${SLURM_GPUS:-not set}"
@@ -152,6 +174,7 @@ srun --cpu-bind=cores python -u "${EVAL_SCRIPT}" \
   FC_DIM_SIZE="${FC_DIM_SIZE}" \
   WANDB_MODE="${WANDB_MODE}" \
   ENTITY="${WANDB_ENTITY}" \
-  PROJECT="${WANDB_PROJECT}"
+  PROJECT="${WANDB_PROJECT}" \
+  "${EVAL_EXTRA_OVERRIDES[@]}"
 
 echo "Finished: $(date -Is)" | tee -a "${RUN_DIR}/manifest.txt"
