@@ -21,7 +21,7 @@ Run the same AS job interactively with `srun`:
 ```bash
 cd /home/adong/JaxMARL-HFT
 srun \
-  --partition=rome \
+  --partition=cbuild \
   --nodes=1 \
   --ntasks=1 \
   --cpus-per-task=32 \
