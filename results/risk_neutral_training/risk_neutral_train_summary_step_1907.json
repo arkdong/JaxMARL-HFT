@@ -1,0 +1,68 @@
+{
+  "created_at": "2026-06-29T09:26:46.013257Z",
+  "do_not_use_this_file_for_rho_star": true,
+  "execution_config": {
+    "action_space": "fixed_quants_complex",
+    "doom_price_penalty": 3,
+    "fixed_quant_value": 10,
+    "reference_price": "far_touch",
+    "reward_lambda": 0.1,
+    "task": "random",
+    "task_size": 600
+  },
+  "future_validation_formula": {
+    "required_validation_fields": [
+      "reward_base_mm",
+      "squared_inventory",
+      "risk_penalty_mm",
+      "rho_mm",
+      "inventory",
+      "reward_portfolio_value"
+    ],
+    "rho_mm_star": "mean_env(sum_t(abs(reward_base_mm_t))) / (mean_env(sum_t(squared_inventory_t)) + eps)"
+  },
+  "market_making_config": {
+    "action_space": "fixed_quants",
+    "fixed_quant_value": 10,
+    "inv_penalty": "quadratic_rho",
+    "inventoryPnL_eta": 0.6,
+    "inventoryPnL_gamma": 0.1,
+    "observation_space": "basic",
+    "rebate_bps": 0.4,
+    "reference_price": "mid",
+    "reward_function": "spooner_asym_damped2",
+    "reward_scaling_quo": 10,
+    "rho_mm": 0,
+    "unwind_price": "mid"
+  },
+  "purpose": "risk_neutral_training_only",
+  "rho_mm_star": null,
+  "rho_mm_star_reason": "rho_mm_star must be estimated later from frozen-policy validation trajectories, not from training rollouts.",
+  "run": {
+    "checkpoint_dir": "/gpfs/home4/adong/JaxMARL-HFT/checkpoints/MARLCheckpoints/Thesis-mm-risk-neutral/colorful-sweep-1",
+    "checkpoint_step": 1907,
+    "seed": 42,
+    "wandb_project": "Thesis-mm-risk-neutral",
+    "wandb_run_name": "colorful-sweep-1"
+  },
+  "schema_version": 1,
+  "training": {
+    "calc_eval": false,
+    "n_devices": 4,
+    "num_envs": 4096,
+    "num_steps": 64,
+    "num_updates": 1907,
+    "time_period": "train",
+    "total_timesteps": 500000000
+  },
+  "training_sanity_metrics_last_update": {},
+  "world_config": {
+    "book_depth": 10,
+    "dataPath": "/gpfs/home4/adong/JaxMARL-HFT/data",
+    "episode_time": 64,
+    "n_data_msg_per_step": 100,
+    "start_resolution": 64,
+    "stock": "AMZN",
+    "timePeriod": "train"
+  }
+}
