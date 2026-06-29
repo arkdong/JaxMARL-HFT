@@ -1,12 +1,12 @@
 {
-  "created_at": "2026-06-29T01:11:13.396566Z",
+  "created_at": "2026-06-29T20:55:54.108458Z",
   "do_not_use_this_file_for_rho_star": true,
   "execution_config": {
     "action_space": "fixed_quants_complex",
     "doom_price_penalty": 3,
     "fixed_quant_value": 10,
     "reference_price": "far_touch",
-    "reward_lambda": 0.1,
+    "reward_lambda": 0,
     "task": "random",
     "task_size": 600
   },
@@ -23,7 +23,7 @@
   },
   "market_making_config": {
     "action_space": "fixed_quants",
-    "fixed_quant_value": 10,
+    "fixed_quant_value": 1,
     "inv_penalty": "quadratic_rho",
     "inventoryPnL_eta": 0.6,
     "inventoryPnL_gamma": 0.1,
@@ -39,15 +39,15 @@
   "rho_mm_star": null,
   "rho_mm_star_reason": "rho_mm_star must be estimated later from frozen-policy validation trajectories, not from training rollouts.",
   "run": {
-    "checkpoint_dir": "/gpfs/home4/adong/JaxMARL-HFT/checkpoints/MARLCheckpoints/Thesis-mm-risk-neutral/worthy-sweep-1",
+    "checkpoint_dir": "/gpfs/home4/adong/JaxMARL-HFT/checkpoints/MARLCheckpoints/Thesis-ex-risk/jumping-cloud-3",
     "checkpoint_step": 32,
     "seed": 42,
-    "wandb_project": "Thesis-mm-risk-neutral",
-    "wandb_run_name": "worthy-sweep-1"
+    "wandb_project": "Thesis-ex-risk",
+    "wandb_run_name": "jumping-cloud-3"
   },
   "schema_version": 1,
   "training": {
-    "calc_eval": false,
+    "calc_eval": true,
     "n_devices": 4,
     "num_envs": 4096,
     "num_steps": 64,
@@ -55,7 +55,38 @@
     "time_period": "train",
     "total_timesteps": 8388608
   },
-  "training_sanity_metrics_last_update": {},
+  "training_sanity_metrics_last_update": {
+    "reward_base_mm": {
+      "max": 24.335599899291992,
+      "mean": 0.1258172450143462,
+      "min": -28.99532127380371,
+      "std": 1.3153148091782376
+    },
+    "rho_mm_logged": {
+      "max": 0.0,
+      "mean": 0.0,
+      "min": 0.0,
+      "std": 0.0
+    },
+    "risk_penalty_mm": {
+      "max": 0.0,
+      "mean": 0.0,
+      "min": 0.0,
+      "std": 0.0
+    },
+    "squared_inventory": {
+      "max": 81.0,
+      "mean": 2.3375625610351562,
+      "min": 0.0,
+      "std": 3.684906174113025
+    },
+    "sum_abs_reward_base_mm_per_env": {
+      "mean": 50.50480463573422
+    },
+    "sum_squared_inventory_per_env": {
+      "mean": 149.60400390625
+    }
+  },
   "world_config": {
     "book_depth": 10,
     "dataPath": "/gpfs/home4/adong/JaxMARL-HFT/data",

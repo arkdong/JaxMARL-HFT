@@ -1,0 +1,11 @@
+RUN_ID=ex_neutral_24299132
+JOB_ID=24299132
+NODE=gcn102.local.snellius.surf.nl
+STARTED=2026-06-29T22:18:00+02:00
+REPO_ROOT=/home/adong/JaxMARL-HFT
+DATA_ROOT=/home/adong/JaxMARL-HFT/data
+LOBSTER_DIR=/home/adong/JaxMARL-HFT/data/rawLOBSTER/AMZN/train
+EXP_FILE=snellius_scripts/experiments/ex_risk_neurtral.env
+CUDA_VISIBLE_DEVICES=0,1,2,3
+SLURM_GPUS=4
+SLURM_CPUS_PER_TASK=64

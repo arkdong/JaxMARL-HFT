@@ -166,6 +166,20 @@ class Execution_EnvironmentConfig():
     reward_lambda:float= 0.0
     reward_scaling_quo: float = 1.0
     doom_price_penalty: int = 5
+
+    # ------------------------------ THESIS V3 ------------------------------
+    # Running Almgren--Chriss-style remaining-position risk coefficient:
+    #     r_EX_t = r_EX_base_t - rho_ex * X_t^2
+    # where X_t is the remaining task quantity before any terminal fictional fill.
+    rho_ex: float = 0.0
+
+    # Optional alias for the existing terminal doom-price penalty, measured in
+    # ticks per unfinished share. Keep at -1.0 to use doom_price_penalty.
+    # Do not add this again directly to reward while the doom fictional-trade
+    # logic is enabled, otherwise terminal non-completion is double-counted.
+    zeta_ex: float = -1.0
+    # ----------------------------------------------------------------------
+
     reference_price: str = "mid"  # options: "mid", "best_bid_ask", "near_touch"
 
     #Not functional.. yet

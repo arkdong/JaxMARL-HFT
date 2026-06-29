@@ -1,0 +1,153 @@
+diff --git a/gymnax_exchange/jaxob/jaxob_config.py b/gymnax_exchange/jaxob/jaxob_config.py
+--- a/gymnax_exchange/jaxob/jaxob_config.py
++++ b/gymnax_exchange/jaxob/jaxob_config.py
+@@
+ class Execution_EnvironmentConfig():
+@@
+     reward_lambda:float= 0.0
+     reward_scaling_quo: float = 1.0
+     doom_price_penalty: int = 5
++    # ------------------------------ THESIS V3 ------------------------------
++    # Running Almgren--Chriss-style remaining-position risk coefficient:
++    #     r_EX_t = r_EX_base_t - rho_ex * X_t^2
++    # where X_t is the remaining task quantity before any terminal fictional fill.
++    rho_ex: float = 0.0
++
++    # Optional alias for the existing terminal doom-price penalty, measured in
++    # ticks per unfinished share. Keep at -1.0 to use doom_price_penalty.
++    # Do not add this again directly to reward while the doom fictional-trade
++    # logic is enabled, otherwise terminal non-completion is double-counted.
++    zeta_ex: float = -1.0
++    # ----------------------------------------------------------------------
+     reference_price: str = "mid"  # options: "mid", "best_bid_ask", "near_touch"
+ 
+diff --git a/gymnax_exchange/jaxen/exec_env.py b/gymnax_exchange/jaxen/exec_env.py
+--- a/gymnax_exchange/jaxen/exec_env.py
++++ b/gymnax_exchange/jaxen/exec_env.py
+@@
+         agent_trades_before_unwind,_ = job.get_agent_trades(trades, agent_params.trader_id)
+         quant_executed_this_step = jnp.abs(agent_trades_before_unwind[:,job.cst.TradesFeat.Q.value].sum()) # QUants can be negative, therefore take absolute value
+         quant_left = agent_state.task_to_execute - (agent_state.quant_executed + quant_executed_this_step)
++
++        # Thesis V3 execution-risk state X_t.  This must be measured BEFORE the
++        # terminal fictional/doom trade is added, because that artificial trade
++        # can force quant_left to zero in the accounting below.
++        quant_left_before_terminal = jnp.maximum(quant_left, 0).astype(jnp.float32)
++        squared_remaining_qty = quant_left_before_terminal ** 2
+@@
+-        penalty = self.cfg.doom_price_penalty * self.world_config.tick_size
++        # Existing JaxMARL-HFT terminal non-completion mechanism:
++        # unfinished quantity is valued as a fictional terminal trade at a bad
++        # price.  zeta_ex is only an alias for the bad-price offset in ticks.
++        zeta_ex_effective_ticks = jnp.where(
++            self.cfg.zeta_ex >= 0.0,
++            self.cfg.zeta_ex,
++            self.cfg.doom_price_penalty,
++        )
++        penalty = zeta_ex_effective_ticks * self.world_config.tick_size
+@@
+-        doom_quant = ep_done_time * quant_left
++        doom_quant = ep_done_time * quant_left_before_terminal
+@@
+-        reward = advantage + self.cfg.reward_lambda * drift
++        reward_base_ex = advantage + self.cfg.reward_lambda * drift
+@@
+-        quant_left = agent_state.task_to_execute - agent_state.quant_executed - agentQuant
+-
+-        reward_info={
+-        "reward":reward,
+-        "agentQuant": agentQuant,
+-        "qp_agent": QP_agent,
+-        "slippage_rm": slippage_rm,
+-        "price_adv_rm": price_adv_rm,
+-        "price_drift_rm": price_drift_rm,
+-        "p_vwap": P_vwap,
+-        "vwap_rm": vwap_rm,
+-        "advantage": advantage,
+-        "drift": drift,
+-        "slippage": slippage,
+-        "doom_quant": doom_quant,
+-        "quant_left": quant_left,
+-        "trade_duration": trade_duration,
+-        }
+-
+-        # jax.debug.callback(large_reward_callback,reward,jnp.abs(reward),trades,P_vwap,world_state.window_index,QP_agent,agentQuant)
+-
+-        reward_scaled = reward / self.cfg.reward_scaling_quo
+-
+-
+-        if self.cfg.reward_function == "finish_fast":
++        quant_left = agent_state.task_to_execute - agent_state.quant_executed - agentQuant
++
++        if self.cfg.reward_function == "finish_fast":
+             # Purely for debug, not worth reporting.
+-            reward = -jnp.abs(quant_left) 
+-            reward_scaled = reward / self.cfg.reward_scaling_quo
++            reward_base_ex = -jnp.abs(quant_left)
+ 
+ 
+         if self.cfg.reward_function == "simplest_case":
+             entry_price=agent_state.init_price
+             price_slip=agentTrades[:,job.cst.TradesFeat.P.value]-jnp.ones_like(agentTrades[:,0])*entry_price #Trade price - 1st price.
+             price_slip=jnp.where(agent_state.is_sell_task,price_slip,-price_slip)
+-            reward=jnp.dot(price_slip,jnp.abs(agentTrades[:,job.cst.TradesFeat.Q.value])) #Sum over (price slippage * quant executed at that price)
++            reward_base_ex=jnp.dot(price_slip,jnp.abs(agentTrades[:,job.cst.TradesFeat.Q.value])) #Sum over (price slippage * quant executed at that price)
+             # This is exactly the same as slippage.
+             # From the abides paper.
+             # Can leave, but redundant.
+-            reward_scaled=reward/self.cfg.reward_scaling_quo
++
++        # ------------------------------ THESIS V3 ------------------------------
++        # Add running quadratic remaining-quantity penalty.  The terminal penalty
++        # is NOT added here, because it is already embedded in reward_base_ex via
++        # the existing fictional doom trade at the terminal bad price.
++        risk_penalty_ex = -jnp.asarray(self.cfg.rho_ex, dtype=jnp.float32) * squared_remaining_qty
++        terminal_penalty_ex_proxy = -zeta_ex_effective_ticks * doom_quant
++        reward = reward_base_ex + risk_penalty_ex
++        reward_scaled = reward / self.cfg.reward_scaling_quo
++        # ----------------------------------------------------------------------
++
++        reward_info={
++        "reward":reward,
++        "reward_base_ex": reward_base_ex,
++        "risk_penalty_ex": risk_penalty_ex,
++        "terminal_penalty_ex_proxy": terminal_penalty_ex_proxy,
++        "squared_remaining_qty": squared_remaining_qty,
++        "rho_ex": jnp.asarray(self.cfg.rho_ex, dtype=jnp.float32),
++        "zeta_ex_effective_ticks": zeta_ex_effective_ticks,
++        "agentQuant": agentQuant,
++        "qp_agent": QP_agent,
++        "slippage_rm": slippage_rm,
++        "price_adv_rm": price_adv_rm,
++        "price_drift_rm": price_drift_rm,
++        "p_vwap": P_vwap,
++        "vwap_rm": vwap_rm,
++        "advantage": advantage,
++        "drift": drift,
++        "slippage": slippage,
++        "doom_quant": doom_quant,
++        "quant_left": quant_left,
++        "quant_left_before_terminal": quant_left_before_terminal,
++        "trade_duration": trade_duration,
++        }
++
++        # jax.debug.callback(large_reward_callback,reward,jnp.abs(reward),trades,P_vwap,world_state.window_index,QP_agent,agentQuant)
+@@
+         return reward_scaled, reward_info
+@@
+         doom_quant = extras["doom_quant"]
+         slippage=extras["slippage"]
+ 
+         info = {
+@@
+             "doom_quant": doom_quant,
++            "quant_left_before_terminal": extras["quant_left_before_terminal"],
++            "squared_remaining_qty": extras["squared_remaining_qty"],
++            "reward_base_ex": extras["reward_base_ex"],
++            "risk_penalty_ex": extras["risk_penalty_ex"],
++            "terminal_penalty_ex_proxy": extras["terminal_penalty_ex_proxy"],
++            "rho_ex": extras["rho_ex"],
++            "zeta_ex_effective_ticks": extras["zeta_ex_effective_ticks"],
+             "is_sell_task": agent_state.is_sell_task,
+             "reward": new_reward,
+         }
