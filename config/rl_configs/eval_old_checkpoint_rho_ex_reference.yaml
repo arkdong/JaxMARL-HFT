@@ -1,0 +1,78 @@
+# Frozen validation evaluation of an old risk-neutral checkpoint.
+# This performs NO PPO updates. It only restores checkpoint['model'] and rolls out
+# on the validation dataset under the current V3 reward code with rho_ex=0.
+
+"LR": [0.00025, 0.00025]
+"NUM_ENVS": 4096
+"NUM_STEPS": 64
+"NUM_STEPS_EVAL": 64
+"GRU_HIDDEN_DIM": 256
+"FC_DIM_SIZE": 256
+"TOTAL_TIMESTEPS": 1
+"UPDATE_EPOCHS": 4
+"NUM_MINIBATCHES": 4
+"GAMMA": [0.999999999, 0.999]
+"GAE_LAMBDA": [0.85, 0.9]
+"CLIP_EPS": 0.2
+"SCALE_CLIP_EPS": [False, False]
+"ENT_COEF": [0.01, 0.01]
+"VF_COEF": [0.5, 0.5]
+"MAX_GRAD_NORM": [0.5, 0.5]
+"ACTIVATION": ["relu", "relu"]
+"ENV_NAME": "JAXMARL-Lob-v0"
+"NUM_AGENTS_PER_TYPE": [1, 1]
+"SEED": 42
+"N_DEVICES": 1
+
+"ENV_CONFIG": "config/env_configs/2_player_fq_fqc_old_checkpoint_validation_v3.json"
+"ANNEAL_LR": [True, True]
+
+"ENTITY": "ark-dong-university-of-amsterdam"
+"PROJECT": "Thesis"
+"WANDB_MODE": "disabled"
+
+# This script uses TimePeriod directly. Keep both on validation for clarity.
+"CALC_EVAL": false
+"TimePeriod": "validation"
+"EvalTimePeriod": "validation"
+"Calculate Baseline": false
+"Timing": false
+
+# Set this to the exact old run folder printed by training:
+# Saving checkpoints to directory: /gpfs/home4/adong/JaxMARL-HFT/checkpoints/MARLCheckpoints/Thesis/<RUN_NAME_OR_ID>
+"CHECKPOINT_DIR": "/gpfs/home4/adong/JaxMARL-HFT/checkpoints/MARLCheckpoints/Thesis-mm-risk-neutral/colorful-sweep-1"
+"CHECKPOINT_STEP": -1   # -1 = latest available checkpoint step
+"OUTPUT_DIR": "results/rho_ex_reference_validation_old_checkpoint"
+"RHO_STAR_EPS": 1e-8
+"DETERMINISTIC_EVAL": false  # false matches the existing ippo_rnn eval loop, which samples from pi
+
+AGENT_CONFIGS:
+  MarketMaking:
+    action_space: "fixed_quants"
+    observation_space: "basic"
+    reward_function: "spooner_asym_damped2"
+    fixed_quant_value: 10
+    inv_penalty: "quadratic_rho"
+    rho_mm: 0.0
+    reward_scaling_quo: 10.0
+    reference_price: "mid"
+    unwind_price: "mid"
+    inventoryPnL_eta: 0.6
+    inventoryPnL_gamma: 0.1
+    rebate_bps: 0.4
+
+  Execution:
+    action_space: "fixed_quants_complex"
+    observation_space: "engineered"
+    reward_function: "normal"
+    task: "random"
+    task_size: 600
+    fixed_quant_value: 10
+    reward_lambda: 0.1
+    reward_scaling_quo: 10.0
+    doom_price_penalty: 3
+    reference_price: "far_touch"
+    rho_ex: 0.0
+    zeta_ex: -1.0
+
+SWEEP_PARAMETERS: {}
