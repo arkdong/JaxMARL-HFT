@@ -110,14 +110,16 @@ PY
 
 srun --cpu-bind=cores python -u "${TRAIN_SCRIPT}" \
   --config-name="${CONFIG_NAME}" \
-  WANDB_MODE="${WANDB_MODE}" \
-  ENTITY="${WANDB_ENTITY}" \
-  PROJECT="${WANDB_PROJECT}" \
-  NUM_ENVS="${NUM_ENVS}" \
-  NUM_STEPS="${NUM_STEPS}" \
-  TOTAL_TIMESTEPS="${TOTAL_TIMESTEPS}" \
-  N_DEVICES="${N_DEVICES}" \
-  Timing="${TIMING}" \
-  SEED="${SEED}"
+  "++WANDB_MODE=${WANDB_MODE}" \
+  "++ENTITY=${WANDB_ENTITY}" \
+  "++PROJECT=${WANDB_PROJECT}" \
+  "++ENV_CONFIG=${ENV_CONFIG}" \
+  "++TimePeriod=${PERIOD}" \
+  "++NUM_ENVS=${NUM_ENVS}" \
+  "++NUM_STEPS=${NUM_STEPS}" \
+  "++TOTAL_TIMESTEPS=${TOTAL_TIMESTEPS}" \
+  "++N_DEVICES=${N_DEVICES}" \
+  "++Timing=${TIMING}" \
+  "++SEED=${SEED}"
 
 echo "Finished: $(date -Is)" | tee -a "${RUN_DIR}/manifest.txt"

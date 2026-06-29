@@ -1,0 +1,25 @@
+"ENV_CONFIG": "config/env_configs/2_player_mm_risk_neutral.json"
+
+"CALC_EVAL": False
+"TimePeriod": "train"
+"EvalTimePeriod": "train"
+
+"PROJECT": "Thesis-mm-risk-neutral"
+"WANDB_MODE": "online"
+
+SWEEP_PARAMETERS:
+  SEED:
+    values: [42]
+
+  AGENT_CONFIGS:
+    parameters:
+      MarketMaking:
+        parameters:
+          inv_penalty:
+            values: ["quadratic_rho"]
+          rho_mm:
+            values: [0.0]
+      Execution:
+        parameters:
+          reward_lambda:
+            values: [0.1]
