@@ -1,7 +1,10 @@
-# LOBSTER AS Baseline Bundle
+# LOBSTER AS Classical-Control Baseline
 
 This folder is a portable copy of the code needed to run the cleaned
-Avellaneda-Stoikov baseline on AMZN LOBSTER 10-level data.
+Avellaneda-Stoikov classical-control baseline on AMZN LOBSTER 10-level data.
+The main pipeline calibrates `sigma`, `A`, and `k` on train data, selects one
+`gamma*` on validation data, and evaluates the fixed finite-horizon AS policy
+on held-out test episodes.
 
 ## Folder Layout
 
@@ -46,6 +49,7 @@ python script/run_as_baseline.py \
   --data-format lobster \
   --data-dir data/lobster_amzn_10 \
   --cache-dir data/cache/as_lobster_10 \
+  --as-horizon-mode finite_episode \
   --workers 32
 ```
 
@@ -58,15 +62,22 @@ bash run_lobster_as.sh
 Outputs are written to:
 
 ```text
-results/AS/
-results/baselines/
+results/AS/as_calibration.json
+results/AS/as_gamma_selection.csv
+results/AS/as_test_metrics.csv
+results/AS/as_for_rl_comparison.csv
+results/AS/as_run_manifest.json
 ```
+
+Use `--resume-from-calibration results/AS/as_calibration.json` to skip train
+calibration and continue with validation gamma selection and test evaluation.
+Use `--include-symmetric` only when the old symmetric market-maker row is
+needed as an auxiliary benchmark.
 
 ## Smoke Test
 
-The tiny fixture is included only to verify the code runs:
+The tests generate tiny synthetic fixtures to verify the code runs:
 
 ```bash
 python -m unittest discover -s tests
 ```
-
