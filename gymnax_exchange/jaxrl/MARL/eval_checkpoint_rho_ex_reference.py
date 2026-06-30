@@ -186,10 +186,12 @@ def _restore_train_states(
     # The training code saved {'model': runner_state[0], 'metrics': ...}.
     # Restore against the full top-level tree so Orbax 0.11 accepts the on-disk
     # metadata, while still only using the restored TrainStates below.
+    # Match baseline_JAXMARL.py: checkpoint model order is reversed at restore.
+    restore_order_train_states = list(reversed(target_train_states))
     target = {
-        "model": target_train_states,
+        "model": restore_order_train_states,
         "metrics": {
-            "train_rewards": [np.nan for _ in target_train_states],
+            "train_rewards": [np.nan for _ in restore_order_train_states],
         },
     }
     try:
@@ -207,7 +209,9 @@ def _restore_train_states(
             "Checkpoint restore did not return a {'model': train_states} tree. "
             "Check that CHECKPOINT_DIR points to a checkpoint saved by ippo_rnn_JAXMARL.py."
         )
-    return restored["model"], step
+    restored_train_states = list(restored["model"])
+    restored_train_states.reverse()
+    return restored_train_states, step
 
 
 def _tree_to_np(x: Any) -> np.ndarray:
