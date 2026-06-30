@@ -30,6 +30,7 @@ import jax.numpy as jnp
 import numpy as np
 import optax
 import orbax.checkpoint as oxcp
+from flax.training import orbax_utils
 from flax.training.train_state import TrainState
 from omegaconf import OmegaConf
 
@@ -183,10 +184,20 @@ def _restore_train_states(
             raise FileNotFoundError(f"No checkpoint steps found in {checkpoint_dir}")
 
     # The training code saved {'model': runner_state[0], 'metrics': ...}.
-    # Restore the model subtree into target TrainStates so static apply_fn/tx are kept.
-    target = {"model": target_train_states}
+    # Restore against the full top-level tree so Orbax 0.11 accepts the on-disk
+    # metadata, while still only using the restored TrainStates below.
+    target = {
+        "model": target_train_states,
+        "metrics": {
+            "train_rewards": [np.nan for _ in target_train_states],
+        },
+    }
     try:
-        restored = manager.restore(step, items=target)
+        restored = manager.restore(
+            step,
+            items=target,
+            restore_kwargs={"restore_args": orbax_utils.restore_args_from_target(target)},
+        )
     except TypeError:
         # Newer Orbax fallback.
         restored = manager.restore(step, args=oxcp.args.PyTreeRestore(target))
